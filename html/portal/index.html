@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="favicon.ico">
+
+    <title>Inicio de Sesión - Portal de Servicios - Consejo de Educación Secundaria</title>
+
+    <link href="dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <script src="jquery/1.12.2/jquery.min.js"></script>
+    <script src="dist/js/bootstrap.min.js"></script>
+
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <link href="docs/assets/css/ie10-viewport-bug-workaround.css" rel="stylesheet">
+
+    <link href="signin/signin.css" rel="stylesheet">
+
+    <script src="docs/assets/js/ie-emulation-modes-warning.js"></script>
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <style>
+      body {background-image:url('teens_background.jpg');background-size:cover;background-repeat:no-repeat;color:#043d83;padding-top:0;padding-bottom:0;background-position:center center;background-attachment:fixed}
+      div.ces-login span.glyphicon {left:0;color:#bbb;margin-top:6px}
+      div.ces-login input.form-control {padding-left:2em}
+      div.container form {padding-top:0;min-width:24em;padding:0}
+      .center {text-align:center}
+      h2.form-signin-heading {white-space:nowrap;text-align:center;padding-bottom:0.5em}
+      img.ces-logo {opacity:0.7;margin-left:auto;margin-right:auto;display:block}
+      div.container div.panel {background-color:rgba(255,255,255,0.7);border-radius:0}
+      div.container {top:0;padding:0}
+    </style>
+  </head>
+
+  <body>
+
+    <div class="container">
+
+      <form class="form-signin" method="post" action="/portal/cgi-bin/portal/principales.pl">
+
+	<div class="panel panel-default">
+	  <div class="panel-body"><img src="ces.png" class="ces-logo"></div>
+	  <div class="panel-body">
+	    <h2 class="form-signin-heading">Portal de Servicios</h2>
+	    <div class="form-group has-feedback ces-login">
+		<label for="inputEmail" class="sr-only">Usuario</label>
+		<input type="text" id="inputEmail" class="form-control" placeholder="u12345678" required autofocus>
+		<span class="glyphicon glyphicon-user form-control-feedback"></span>
+	    </div>
+	    <div class="form-group has-feedback ces-login">
+		<label for="inputPassword" class="sr-only">Contraseña</label>
+		<input type="password" id="inputPassword" class="form-control" placeholder="contraseña" required>
+		<span class="glyphicon glyphicon-lock form-control-feedback"></span>
+	    </div>
+	    <button class="btn btn-lg btn-primary btn-block" type="submit">Iniciar sesión</button>
+	  </div>
+	</div>
+
+	<div class="panel panel-default">
+	  <div class="panel-heading">Ayuda:</div>
+	  <div class="panel-body center"><a href="#modal-usuario" data-toggle="modal" data-target="#modal-usuario">Olvidé el usuario</a> | <a href="https://www.ces.edu.uy/pwm/public/ForgottenPassword?PwmLocale=es">Olvidé la contraseña</a></div>
+	</div>
+
+	<div class="panel panel-default">
+	  <div class="panel-heading">Ingreso por primera vez:</div>
+	  <div class="panel-body center"><a href="https://www.ces.edu.uy/pwm/public/ActivateUser">Activar usuario</a></div>
+	</div>
+      </form>
+
+    </div> <!-- /container -->
+
+
+<!-- ayuda olvidé el usuario: -->
+<div class="modal fade" id="modal-usuario" role="dialog" tabindex="-1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <h2>Usuario del Portal de Servicios</h2>
+		<p>Para los usuarios registrados con cédula de identidad uruguaya, el usuario se compone de la letra "u" seguida de la cédula de identidad, sin puntos ni guión, incluyendo el dígito verificador.</p>
+		<p>Por ejemplo, si su cédula es 1.234.567-8, su usuario será: u12345678.</p>
+		<p>En otros casos, comuníquese con nuestra mesa de ayuda, al 2908 98 80 int. 1.</p>
+	    </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="docs/assets/js/ie10-viewport-bug-workaround.js"></script>
+  </body>
+</html>

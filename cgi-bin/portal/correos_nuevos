@@ -1,0 +1,33 @@
+#!/usr/bin/perl
+#
+# correos_nuevos
+#	Cantidad de correos nuevos del usuario del portal para ser mostrados por ajax
+#
+# 2016-06-29. Ernesto - Versión 1.0
+
+
+use strict;
+use DBI;
+use CGI qw/header cookie redirect/;
+#use utf8;
+use portal3 qw/getSession dbGet portal_url unreadEmail/;
+
+my ($userid,$sessionid,$dependid,$lugarid,$email);
+($userid,$sessionid,$dependid,$lugarid,$_,$_,$_,$email) = getSession(cookie(-name=>'SESION'), 1);
+
+print header(-charset=>'utf-8');
+
+# Cargo la cantidad de correos sin leer:
+if (!$userid) {
+	# la sesión no es válida
+	print "SESSION TIMEDOUT\n";
+
+} elsif ($email) {
+	$email =~ s/\@ces.edu.uy//;
+	print unreadEmail($email);
+}
+
+exit (0);
+
+######################################################################
+

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <!--link rel="icon" href="favicon.ico"-->
+
+    <title>Cierre de Sesión - Portal de Servicios - Consejo de Educación Secundaria</title>
+
+    <script src="https://apis.google.com/js/platform.js?onload=onLoadCallback" defer async></script>
+    <meta name="google-signin-client_id" content="41139243817-59sjiktp89dnettgtk1gm3kvhlu74o2q.apps.googleusercontent.com">
+
+  </head>
+  <body>
+    <script type="text/javascript">
+        window.onLoadCallback = function(){
+	    gapi.load('auth2', function() {
+                gapi.auth2.init();
+                var auth2 = gapi.auth2.getAuthInstance();
+		if (auth2) {
+                    var aux = auth2.disconnect().then(  location.replace("login") );
+                }
+            });
+        }
+    </script>
+  </body>
+</html>

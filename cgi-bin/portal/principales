@@ -1,0 +1,137 @@
+#!/usr/bin/perl
+#
+# principales
+#	Menú principal del portal de servicios
+#
+# 2016-06-13. Ernesto - Versión 1.0
+
+$::debug = 0;
+($::debug) and print "Content-type:text/plain\n\n";
+
+
+use strict;
+use DBI;
+use Template;
+use CGI qw/:standard/;
+#use utf8;
+use CGI::Carp qw/fatalsToBrowser/;
+use URI::Escape;
+use portal3 qw/getSession dbGet error userInfo checkFormat updateSession portal_url notifications unreadEmail/;
+
+$::ambiente = (param('ambiente') eq 'preproduccion' ? 'preproduccion' : 'produccion');
+
+my ($userid,$sessionid,$dependid,$lugarid,$email);
+($userid,$sessionid,$dependid,$lugarid,$_,$_,$_,$email) = getSession(cookie(-name=>'SESION'));
+
+if ($userid eq 'u19724241') {
+	# Usuarios para pruebas:
+	#$userid='u29380265'; # adscripto y otros
+	#$userid='u36535156'; # preparador y otros
+	#$userid='u32955457'; # ocollado
+	#$userid='u35400085'; # sin telefono ni correo
+	#$userid='u13503768'; # aptitud en rojo
+	#$userid='u14057403'; # actividad computada en rojo
+	#$userid='u29072123'; # director
+	#$userid='u17051361'; # Direccion general
+	#$userid='u40554843'; # Melisa
+}
+
+if ($dependid !~ /^\d+$/ or $lugarid !~ /^\d+$/) {
+	error("Debe iniciar sesi&oacute;n en el portal de servicios $dependid $lugarid",200);
+}
+
+my %info;
+my $newd = checkFormat(param('d'), '\d+');
+my $newl = checkFormat(param('l'), '\d+');
+
+if ($dependid == 0 && $lugarid == 0 && !($newd && $newl)) {
+	%info = userInfo($userid,$dependid,$lugarid);
+	if ($#{$info{dependencias}} == 0) {
+		# tiene una sola dependencia entonces fuerzo el cambio hacia ahi
+		$newd = $info{dependencias}[0][0];
+		$newl = $info{dependencias}[0][1];
+	}
+}
+
+if ($newd && $newl) {
+	$dependid = $newd;
+	$lugarid = $newl;
+
+	updateSession($sessionid,$dependid,$lugarid);
+	print redirect( portal_url() );
+	exit(0);
+}
+
+# Cargo la información asociada al usuario en esta dependencia y lugar
+(%info) or %info = userInfo($userid,$dependid,$lugarid);
+
+#
+# proceso el formulario inical
+#
+
+my $page = Template->new({EXPOSE_BLOCKS => 1});
+
+my %tvars;
+
+$tvars{nombre} = $info{nombre};
+$tvars{hayNotificaciones} = notifications($userid);
+$tvars{url_login} = portal_url("login");
+
+# $page->process("junta.tt/puntaje", \%vars, \$tvars{puntajes});
+
+# determino el ambiente:
+$tvars{ambiente} =  $::ambiente;
+
+# Genero el HTML final:
+print header(-charset=>'utf-8');
+
+# Cargo las opciones de menú:
+foreach $_ (@{$info{menu}}) {
+	my %vars = (titulo=>$_->[0],
+		    path=>defined($_->[7]) ? uri_unescape("$_->[7]$_->[8]") : undef,
+		    iframe=>($_->[9] ne "N"), vacio=>!defined($_->[7]));
+
+	my $nivel=6;
+	while ($nivel>1) {
+		last if ($_->[$nivel] > 0);
+		$nivel--;
+	}
+	$vars{nivel} = $nivel;
+
+	if ($_->[10] =~ /^MA_/) {
+		$page->process("principales.tt/menuAlumnos", \%vars, \$tvars{rows_menuAlumnos});
+	} elsif ($_->[10] =~ /^MP_/) {
+		$page->process("principales.tt/menuPersonal", \%vars, \$tvars{rows_menuPersonal});
+	} elsif ($_->[10] =~ /^ML_/) {
+		$page->process("principales.tt/menuLiceo", \%vars, \$tvars{rows_menuLiceo});
+	} else {
+		$page->process("principales.tt/menuGeneral", \%vars, \$tvars{rows_menuGeneral});
+	}
+}
+
+# Cargo la selección de dependencias donde puede actuar:
+$tvars{hay_depend} = 0;
+$tvars{depend} = "Seleccione ubicación";
+foreach $_ (@{$info{dependencias}}) {
+	my %vars = (dependid=>$_->[0],lugarid=>$_->[1],depend=>$_->[2]);
+	if ($dependid == $_->[0] && $lugarid == $_->[1]) {
+		$tvars{depend} = $_->[2];
+	}
+	$page->process("principales.tt/depend", \%vars, \$tvars{rows_depend});
+	$tvars{hay_depend} = 1;
+}
+
+# Cargo la cantidad de correos sin leer:
+if ($email) {
+	$tvars{hay_email} = 1;
+#	$email =~ s/\@ces.edu.uy//;
+#	defined($email) and $tvars{emails} = unreadEmail($email);
+}
+
+$page->process("principales.tt", \%tvars)
+|| die "Template process failed: ", $page->error(), "\n";
+
+exit (0);
+
+######################################################################
+

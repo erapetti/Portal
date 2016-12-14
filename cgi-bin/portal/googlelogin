@@ -1,0 +1,39 @@
+#!/usr/bin/perl
+#
+# googlelogin
+#	Ingreso al portal de servicios con credenciales de Google
+#
+# 2016-06-24. Ernesto - Versión 1.0
+
+$::debug = 0;
+($::debug) and print "Content-type:text/plain\n\n";
+
+
+use strict;
+use DBI;
+use CGI qw/:standard/;
+#use utf8;
+use CGI::Carp qw/fatalsToBrowser/;
+use portal3 qw/checkFormat portal_url newSession validateToken validateSecret/;
+
+
+my $id_token = checkFormat(param('idtoken'), '[0-9a-zA-Z\n|_.:,;-]+');
+my $secret = checkFormat(param('secret'), '\d+:\d+:\d+');
+if ($id_token && $secret) {
+	if (validateSecret($secret)) {
+		my $user = validateToken($id_token);
+		if ($user) {
+			my $sessionid = newSession($user);
+			if ($sessionid) {
+				my $cookie = cookie(-name=>'SESION', -value=>$sessionid);
+				print header(-charset=>'utf-8',-cookie=>$cookie,-status=>"302 Found",-location=>portal_url("principales"));
+				exit(0);
+			}
+		}
+	}
+}
+
+# En caso de error vuelvo al formulario de login:
+print header(-charset=>'utf-8',-status=>"302 Found",-location=>portal_url("login"));
+
+exit (0);

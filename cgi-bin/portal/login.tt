@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <!--link rel="icon" href="favicon.ico"-->
+
+    <title>Inicio de Sesión - Portal de Servicios - Consejo de Educación Secundaria</title>
+
+    <link href="/portal/portal/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <script src="/portal/portal/jquery/1.12.2/jquery.min.js"></script>
+    <script src="/portal/portal/dist/js/bootstrap.min.js"></script>
+
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <link href="/portal/portal/docs/assets/css/ie10-viewport-bug-workaround.css" rel="stylesheet">
+
+    <link href="/portal/portal/signin/signin.css" rel="stylesheet">
+
+    <script src="/portal/portal/docs/assets/js/ie-emulation-modes-warning.js"></script>
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <!-- Google Sign-In -->
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <meta name="google-signin-client_id" content="41139243817-59sjiktp89dnettgtk1gm3kvhlu74o2q.apps.googleusercontent.com">
+
+    <style>
+      body {margin:0;padding:0;background-color:#000;}
+      div#background {background-image:url('[% background %]');background-size:cover;background-repeat:no-repeat;color:#043d83;padding-top:0;padding-bottom:0;background-position:center center;background-attachment:fixed;position:fixed;left:0;right:0;z-index:-1;display:block;width:100%;height:100%;opacity:0.7;}
+      div.container {overflow:auto; position:relative; top:0; padding:0}
+      div.ces-login span.glyphicon {left:0;color:#bbb;margin-top:6px}
+      div.ces-login input.form-control {padding-left:2em;[% IF error_usr_pwd %]background-color:#ffcccc[% END %]}
+      div.container form {padding-top:0;min-width:24em;padding:0}
+      .center {text-align:center;margin:0 auto}
+      div.g-signin2 {width:120px;margin:0 auto}
+      h2.form-signin-heading {white-space:nowrap;text-align:center;padding-bottom:0.5em}
+      img.ces-logo {opacity:0.7;margin-left:auto;margin-right:auto;display:block}
+      div.container div.panel {background-color:rgba(255,255,255,0.8);border-radius:0}
+      div.container div.alert {margin-top:0.5em}
+      div#descripcion { padding:1em; margin:1em; position:absolute; top:0; left:0; background-color:rgba(255,255,255,0.7); border-radius:0 }
+      div#descripcion h1 { font-size:100%; text-align:center; font-weight:bold; margin:0 }
+    </style>
+
+    <script type="text/javascript">
+	// Intento salir del iframe
+
+	try {
+		if (window.self !== window.top) {
+			window.top.location.href = "/portal/cgi-bin/portal/login";
+		}
+	} catch(e) {
+		window.top.location.href = "/portal/login";
+	}
+    </script>
+  </head>
+
+  <body>
+    <div id="background"></div>
+
+    [% IF descripcion %]<div id="descripcion" class="hidden-xs">[% descripcion %]</div>[% END %]
+
+    <div class="container">
+
+      <form class="form-signin" method="POST" action="/portal/cgi-bin/portal/login">
+
+	<div class="panel panel-default">
+	  <div class="panel-body"><img src="/portal/portal/ces.png" class="ces-logo"></div>
+	  <div class="panel-body">
+	    <h2 class="form-signin-heading">Portal de Servicios</h2>
+
+            [% IF mensaje %]<div class="alert alert-danger" role="alert">[% mensaje %]</div>[% END %]
+
+	    <div class="form-group has-feedback ces-login">
+		<label for="userid" class="sr-only">Usuario</label>
+		<input type="text" name="userid" id="userid" class="form-control" placeholder="u12345678" [% IF userid %]value="[% userid %]"[% ELSE %]autofocus[% END %] required>
+		<span class="glyphicon glyphicon-user form-control-feedback"></span>
+	    </div>
+	    <div class="form-group has-feedback ces-login">
+		<label for="password" class="sr-only">Contraseña</label>
+		<input type="password" name="password" id="password" class="form-control" placeholder="contraseña" [% IF userid %]autofocus[% END %] required>
+		<span class="glyphicon glyphicon-lock form-control-feedback"></span>
+	    </div>
+	    <button class="btn btn-lg btn-primary btn-block" type="submit">Iniciar sesión</button>
+
+	  </div>
+	</div>
+<!--
+	<div class="panel panel-default">
+	  <div class="panel-heading">Ingresar con tu cuenta de Google:</div>
+	  <div class="panel-body center">
+          <div class="g-signin2" data-onsuccess="onSignIn"></div>
+          </div>
+	</div>
+-->
+
+	<div class="panel panel-default">
+	  <div class="panel-heading">Ayuda:</div>
+	  <div class="panel-body center"><a href="#modal-usuario" data-toggle="modal" data-target="#modal-usuario">Olvidé el usuario</a> | <a href="https://www.ces.edu.uy/pwm/public/ForgottenPassword?PwmLocale=es">Olvidé la contraseña</a></div>
+	</div>
+
+	<div class="panel panel-default">
+	  <div class="panel-heading">Ingreso por primera vez:</div>
+	  <div class="panel-body center"><a href="https://www.ces.edu.uy/pwm/public/ActivateUser">Activar usuario</a></div>
+	</div>
+
+        <input type="hidden" name="secret" value="[% secret %]">
+      </form>
+
+    </div> <!-- /container -->
+
+
+<!-- ayuda olvidé el usuario: -->
+<div class="modal fade" id="modal-usuario" role="dialog" tabindex="-1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <h2>Usuario del Portal de Servicios</h2>
+		<p>Para los usuarios registrados con cédula de identidad uruguaya, el usuario se compone de la letra "u" seguida de la cédula de identidad, sin puntos ni guión, incluyendo el dígito verificador.</p>
+		<p>Por ejemplo, si su cédula es 1.234.567-8, su usuario será: u12345678.</p>
+		<p>En otros casos, comuníquese con nuestra mesa de ayuda, al 2908 98 80 int. 1.</p>
+	    </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="/portal/portal/docs/assets/js/ie10-viewport-bug-workaround.js"></script>
+
+<!--
+    <script type="text/javascript">
+	function onSignIn(googleUser) {
+	    var id_token = googleUser.getAuthResponse().id_token;
+	    if (id_token.match('^[0-9a-zA-Z\n|_.:,;-]*$')) {
+		    location.replace("googlelogin?idtoken="+id_token+"&secret=[% secret %]");
+	    }
+	}
+    </script>
+-->
+  </body>
+</html>

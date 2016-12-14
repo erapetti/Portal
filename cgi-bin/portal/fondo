@@ -1,0 +1,218 @@
+#!/usr/bin/perl -T
+#
+# fondo
+#	Selección de la imagen de fondo del portal
+#
+# 2016-08-09. Ernesto - Versión 1.0
+
+$::debug = 0;
+($::debug) and print "Content-type:text/plain\n\n";
+
+
+use lib '/var/www/cgi-bin/portal';
+use strict;
+use Template;
+use CGI qw/:standard/;
+use DBI;
+#use utf8;
+use CGI::Carp qw/fatalsToBrowser/;
+use portal3 qw/error checkFormat portal_url getSession/;
+use Date::Format qw/time2str/;
+
+sub save($$$) ;
+sub readDescripcion ($) ;
+sub makeDescripcionFilename ($) ;
+
+my $DIR = "/var/www/html/portal/imagenes";
+my $SALIDA_JPG = "background.jpg";
+my $SALIDA_HTML = "descripcion.html";
+
+$ENV{PATH}='/bin';
+$CGI::POST_MAX=1024 * 1024 * 200;  # max 200M posts
+$CGI::DISABLE_UPLOADS = 0;  # no uploads
+
+
+$::ambiente = (param('ambiente') eq 'preproduccion' ? 'preproduccion' : 'produccion');
+
+my ($userid,$sessionid,$dependid,$lugarid,$email);
+($userid,$sessionid,$dependid,$lugarid,$_,$_,$_,$email) = getSession(cookie(-name=>'SESION'));
+
+my $page = Template->new({EXPOSE_BLOCKS => 1});
+
+my %tvars = ( basedir => "/portal/portal/imagenes" );
+
+
+#
+# proceso el formulario inical
+#
+
+
+if (param('borrar')) {
+	if (param('img')) {
+		my $img = checkFormat(param('img'), '[\d\w_-][\/ \d\w_.-]*');
+
+		if ($img && unlink("$DIR/$img")) {
+
+			my $descripcion = makeDescripcionFilename("$DIR/$img");
+			if (-r $descripcion) {
+				unlink($descripcion)
+			}
+			print redirect("?");
+			exit(0);
+		}
+		$tvars{mensaje} = "ERROR: al borrar la imagen $img: $!";
+	}
+	
+} elsif (param('activar')) {
+	if (param('img')) {
+		my $img = checkFormat(param('img'), '[\d\w_-][\/ \d\w_.-]*');
+		if (! $img) {
+			$tvars{mensaje} = "ERROR: Nombre de archivo incorrecto";
+		} else {
+			my $err = system("cp","-p","$DIR/$img","$DIR/$SALIDA_JPG");
+			
+			if ($err == 0) {
+
+				# copio la descripción:
+				my $descr = makeDescripcionFilename($img);
+				if (-r "$DIR/$descr") {
+					$err = system("cp","-p","$DIR/$descr","$DIR/$SALIDA_HTML");
+
+					if ($err == 0) {
+						print redirect("?");
+						exit(0);
+					}
+					$tvars{mensaje} = "ERROR: Código de error ".($err/256)." al copiar la descripción $descr";
+				}
+			} else {
+				$tvars{mensaje} = "ERROR: Código de error ".($err/256)." al copiar la imagen $img";
+			}
+		}
+	}
+
+} elsif (param('upload')) {
+
+	my $err = save("adjunto", "descripcion", $DIR);
+	if (!$err) {
+		print redirect("?");
+		exit(0);
+	}
+	$tvars{mensaje} = $err;
+}
+
+# Presento el listado de fotos:
+
+my $time = (stat("$DIR/$SALIDA_JPG"))[9];
+$tvars{background} = "$SALIDA_JPG?$time";
+
+if (opendir(DIR,"$DIR")) {
+	foreach my $file (readdir(DIR)) {
+		next if ($file =~ /^\.\.?$/);
+		next if ($file !~ /\.(jpg|png)$/i);
+		next if ($file eq $SALIDA_JPG);
+
+		$file =~ s/.*\///;
+
+		my %vars;
+		$vars{"basedir"} = "/portal/portal/imagenes";
+		$vars{"img"} = "$file";
+		$vars{"timestamp"} = (stat("$DIR/$file"))[9];
+		$vars{"fecha"} = time2str('%d/%m/%Y %T', $vars{"timestamp"});
+		$vars{"descripcion"} = readDescripcion(makeDescripcionFilename("$DIR/$file"));
+		$page->process("fondo.tt/row_imagenes", \%vars, \$tvars{rows_imagenes});
+	}
+}
+
+# determino el ambiente:
+$tvars{ambiente} =  $::ambiente;
+
+# Genero el HTML final:
+print header(-charset=>'utf-8');
+
+$page->process("fondo.tt", \%tvars)
+|| die "Template process failed: ", $page->error(), "\n";
+
+exit (0);
+
+######################################################################
+
+sub save($$$) {
+	my ($paramfile,$paramdescripcion,$basedir) = @_;
+
+	my @files = param($paramfile);
+
+	my $descripcion = param($paramdescripcion);
+
+	for my $uploaded_file (@files) {
+		if (!$uploaded_file) {
+			return "ERROR: No se recibió el nombre de uno de los archivos adjuntos";
+		}
+		$uploaded_file =~ /(\.[a-zA-Z]{3,4})$/;
+		my $extension = lc($1);
+
+		if (!$extension) {
+			return "ERROR: no se encuentra la extensión en el nombre del archivo $uploaded_file. Compruebe que lo puede abrir en su PC y vuelva a intentar el envío";
+		}
+
+		if ($extension !~ /^\.(jpg|png)$/) {
+			return "ERROR: no están habilitados los archivos con extensión $extension";
+		}
+
+		my $filename = lc($uploaded_file);
+		$filename =~ s%^.*/%%;
+
+		if (-r "$basedir/$filename") {
+			return "ERROR: Ya existe el archivo $filename en el servidor";
+		}
+
+		if (! checkFormat( $filename, '[\d\w_-][\/ \d\w_.-]*' )) {
+			return "ERROR: El nombre del archivo contiene caracteres inválidos: $filename";
+		}
+
+		my $tmpfilename = checkFormat( tmpFileName($uploaded_file) , '[\/\d\w_.-]*');
+
+		if (!$tmpfilename) {
+			return "ERROR: El nombre del archivo contiene caracteres inválidos: $uploaded_file";
+		}
+
+#		# convierto la imagen a 320px de ancho:
+#		my $err = system("convert","-resize","320","$tmpfilename","$basedir/$filename");
+		# convierto la imagen a 720 de alto y la recodifico con el 30% de calidad para que pese menos
+		my $err = system("convert","-sample","x720","-quality","30","$tmpfilename","$basedir/$filename");
+		
+		if ($err != 0) {
+			return "ERROR: Código de error ".($err/256)." al convertir la imagen $filename";
+		}
+
+		if ($descripcion) {
+			my $file = makeDescripcionFilename($filename);
+			open(FILE,">$DIR/$file");
+			print FILE $descripcion;
+			close(FILE);
+		}
+	}
+
+        return undef;
+}
+
+sub makeDescripcionFilename ($) {
+	my ($file) = @_;
+
+	$file =~ s/\.[a-zA-Z]{3,4}$/.html/;
+
+	return $file;
+}
+
+sub readDescripcion ($) {
+	my ($filename) = @_;
+
+	my $descripcion;
+
+	if ( open(FILE,$filename) ){
+		$/=undef;
+		$descripcion = <FILE>;
+		close(FILE);
+	}
+	return $descripcion;
+}
+

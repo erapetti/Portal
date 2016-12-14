@@ -1,0 +1,38 @@
+#!/usr/bin/perl
+#
+# logout
+#
+#	Termina una sesión en el portal de servicios
+# 2016-06-13. Ernesto - Versión 1.0
+
+$::debug = 0;
+($::debug) and print "Content-type:text/plain\n\n";
+
+
+use strict;
+use DBI;
+use Template;
+use CGI qw/:standard/;
+#use utf8;
+use CGI::Carp qw/fatalsToBrowser/;
+use portal3 qw/getSession endSession portal_url/;
+
+
+my ($userid,$sessionid,$dependid,$lugarid) = getSession(cookie(-name=>'SESION'));
+
+if ($sessionid) {
+	# Hay una sesión válida
+	endSession($sessionid);
+}
+
+my $page = Template->new({EXPOSE_BLOCKS => 1});
+
+my %tvars;
+
+# Genero el HTML final:
+print header(-charset=>'utf-8');
+
+$page->process("logout.tt", \%tvars)
+|| die "Template process failed: ", $page->error(), "\n";
+
+exit (0);
