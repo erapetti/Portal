@@ -16,18 +16,20 @@ use CGI qw/:standard/;
 #use utf8;
 use CGI::Carp qw/fatalsToBrowser/;
 use Net::LDAP;
+use MIME::Base64;
 use portal3 qw/dbGet dbInsert dbConnect error userInfo checkFormat updateSession portal_url newSession validatePassword newSecret validateSecret addlog_db/;
-
 
 $::ambiente = (param('ambiente') eq 'preproduccion' ? 'preproduccion' : 'produccion');
 
 my ($error,$userid,$sessionid,$dependid,$lugarid) = portal3::_getSession(cookie(-name=>'SESION'));
 
+my $redirect = checkFormat(param('r'), '[\w\d_.?=/%-]+');
+($redirect) or $redirect = checkFormat(decode_base64(checkFormat(param('r64'), '[\w\d_=/%\r\n]+')), '[\w\d_.?=/%:-]+');
+
 if ($sessionid && $error eq "OK") {
 	# Ya hay una sesión válida
 	updateSession($sessionid);
 
-	my $redirect = checkFormat(param('r'), '[\w\d_.?=/-]+');
 	if ($redirect) {
 		print redirect( $redirect );
 	} else {
@@ -48,6 +50,7 @@ my %tvars;
 my $user = checkFormat(param('userid'), 'u\d+');
 my $passwd = checkFormat(param('password'), '[a-zA-Z0-9áéíóúñäëïöüÁÉÍÓÚÑÄËÏÖÜçÇ,;.:ºª!|"@·#$~%&¬/()=?¿¡+*{} 	_-]+');
 my $secret = checkFormat(param('secret'), '\d+:\d+:\d+');
+
 if ($user && $passwd && $secret) {
 	if (validateSecret($secret)) {
 		my $err = validatePassword($user, $passwd);
@@ -56,7 +59,8 @@ if ($user && $passwd && $secret) {
 			if ($sessionid) {
 				my $deletecookie = cookie(-name=>'SESION', -value=>'', -path=>'/', -domain=>'ces.edu.uy', -expires=>'-1d');
 				my $cookie = cookie(-name=>'SESION', -value=>$sessionid);
-				print header(-charset=>'utf-8',-cookie=>[$deletecookie,$cookie],-status=>"302 Found",-location=>portal_url("principales"));
+				print header(-charset=>'utf-8',-cookie=>[$deletecookie,$cookie],-status=>"302 Found",
+				             -location=>($redirect ? $redirect : portal_url("principales")));
 				addlog_db($user,1,"Usuario $user , Ingreso exitoso");
 				exit(0);
 			}
@@ -70,7 +74,7 @@ if ($user && $passwd && $secret) {
 			$tvars{mensaje} = "Su usuario no está habilitado. Comuníquese con Mesa de Ayuda";
 		} elsif ($err == 3) {
 			# muchos errores
-			$tvars{mensaje} = "Ha errado demasiadas veces su contraseña. Debe esperar un minuto antes de reintentar el ingreso";
+			$tvars{mensaje} = "Se ha equivocado demasiadas veces. Debe esperar un minuto antes de reintentar el ingreso";
 			$tvars{error_usr_pwd} = 1;
 		} elsif ($err == 4) {
 			# la password no coincide
@@ -79,7 +83,7 @@ if ($user && $passwd && $secret) {
 			$tvars{userid} = $user;
 		}
 	} else {
-		# el scret caducó o no es válido
+		# el secret caducó o no es válido
 		$tvars{mensaje} = "El formulario está vencido. Reintente el ingreso";
 	}
 }
@@ -90,6 +94,7 @@ if ($user && $passwd && $secret) {
 $tvars{ambiente} =  $::ambiente;
 
 $tvars{secret} = newSecret();
+$tvars{redirect64} = encode_base64($redirect);
 
 $tvars{background} = "/portal/portal/imagenes/background.jpg?".(stat("/var/www/html/portal/imagenes/background.jpg"))[9] ;
 

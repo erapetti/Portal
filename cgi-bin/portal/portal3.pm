@@ -100,7 +100,7 @@ sub getSession($;$) {
 sub _getSession($) {
 	my ($cookie) = @_;
 
-	$cookie =~ /^ *([a-zA-Z\d]+) *$/ || return "Sesión no válida. Reinicie su conexión con el portal de servicios".($debug ? ". Cookie no válida: $cookie" : "");
+	$cookie =~ /^ *([a-zA-Z\d]+) *$/ || return "Sesión no válida. Reinicie su conexión con el portal de servicios".($::debug ? ". Cookie no válida: $cookie" : "");
 
 	my $sessionid = $1;
 
@@ -119,7 +119,7 @@ sub _getSession($) {
 		@row = $sth->fetchrow_array;
 		$sth->finish;
 
-		(defined($row[0])) || return "Sesión no válida. Reinicie su conexión con el portal de servicios".($debug ? ". No está la sesión en la base de datos" : "");
+		(defined($row[0])) || return "Sesión no válida. Reinicie su conexión con el portal de servicios".($::debug ? ". No está la sesión en la base de datos" : "");
 
 	} else {
 
@@ -129,12 +129,12 @@ sub _getSession($) {
 	}
 
 	if ($row[6] !~ /^ *(..)\/(..)\/(..) (..):(..):(..) *$/) {
-		return "Sesión no válida. Reinicie su conexión con el portal de servicios".($debug ? ". Fecha en formato inválido: ".$row[6] : "");
+		return "Sesión no válida. Reinicie su conexión con el portal de servicios".($::debug ? ". Fecha en formato inválido: ".$row[6] : "");
 	}
 
 	my $sessiontimestamp = POSIX::mktime($6,$5,$4,$1,$2-1,$3+100);
 	if ($sessiontimestamp < time()-$::SESSION_TIMEOUT) {
-		return "Sesión no válida. Reinicie su conexión con el portal de servicios".($debug ? ". Fecha muy vieja: ".$sessiontimestamp : "");
+		return "Sesión no válida. Reinicie su conexión con el portal de servicios".($::debug ? ". Fecha muy vieja: ".$sessiontimestamp : "");
 	}
 
         return ("OK",@row); # OK,$userid,$sessionid,$dependid,$lugarid,$grupid,$grupnivel,$timestamp,$email
@@ -165,7 +165,7 @@ sub newSession($) {
 	}
 
 	my $email;
-	$sth = dbGet($::dbh_portal, "sso.sso", ["email"], "userid='$userid'", "");
+	$sth = dbGet($::dbh_portal, "sso.sso", ["email"], "userid='$userid' and activa<>'N'", "");
 	if ($sth) {
 		($email) = $sth->fetchrow_array;
 		$sth->finish;
@@ -427,7 +427,7 @@ sub dependencias($) {
 	my $sth = dbGet($::dbh_portal,
 			'SEGRELACION_GRUPO_USUARIO join Direcciones.DEPENDENCIAS using (dependid) join Direcciones.LUGARES using (lugarid)',
 			['dependid,lugarid,substr(if(dependdesc=lugardesc,dependdesc,lugardesc),1,40) dependlugar'],
-			"userid='$userid'",
+			"userid='$userid' and (GrupUsrStatusFchFin='1000-01-01' or GrupUsrStatusFchFin>now()) and GrupUsrStatus='A'",
 			"group by dependid,lugarid");
 #			['dependid,lugarid,substr(if(dependdesc=lugardesc,dependdesc,concat(dependdesc,"/",lugardesc)),1,40) dependlugar'],
 
@@ -516,7 +516,7 @@ sub validatePassword($$) {
 	($row[1]==2 && $row[2]==1) || return 2; # usuario no habilitado o bloqueado
 
 	my $userintlog = $row[0];
-	($userintlog>5 and $row[3]>=time()-60) && return 3; # muchos fallos en el último minuto
+	($userintlog>5 and $row[3]>=time()-$userintlog*10) && return 3; # A partir del 5 fallo penalizo 10 segundos por cada error
 	
 
 	my $ldap = Net::LDAP->new('ldap.ces.edu.uy') or return 0;
@@ -546,7 +546,7 @@ sub notifications($) {
 
 	my $sth = dbGet($::dbh_portal,"notificaciones.NOTIFICADOS JOIN notificaciones.NOTIFICACIONES using (NotId)",
 		["NotId"],
-		"notsts='A' and NotUsrSts='A' and NotUsrFchNot='1000-01-01' and NotUsrFchPub<now() and NotUsrIdNot='$userid'",
+		"notsts='A' and NotUsrSts='A' and NotFchPub is not null and NotUsrFchNot='1000-01-01' and NotUsrFchPub<now() and NotUsrIdNot='$userid'",
 		"limit 1");
 
         ($sth) || return -1;

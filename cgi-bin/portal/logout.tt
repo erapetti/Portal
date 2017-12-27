@@ -21,7 +21,7 @@
                 gapi.auth2.init();
                 var auth2 = gapi.auth2.getAuthInstance();
 		if (auth2) {
-                    var aux = auth2.disconnect().then(  location.replace("login") );
+                    var aux = auth2.disconnect().then(  location.replace("https://servicios.ces.edu.uy/") );
                 }
             });
         }

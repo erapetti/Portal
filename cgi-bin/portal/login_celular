@@ -1,0 +1,217 @@
+#!/usr/bin/perl
+#
+# login_celular
+#	Crea un sesión en el portal desde un celular
+#
+# 2017-05-06. Ernesto - Versión 1.0
+
+$::debug = 0;
+($::debug) and print "Content-type:text/plain\n\n";
+
+
+use strict;
+use DBI;
+use Template;
+use CGI qw/:standard/;
+#use utf8;
+use CGI::Carp qw/fatalsToBrowser/;
+use Net::LDAP;
+use MIME::Base64;
+use JSON;
+use DateTime;
+use portal3 qw/dbGet checkFormat newSession validatePassword addlog_db/;
+
+sub update_celular($%) ;
+sub perid($) ;
+sub error($;$) ;
+
+my %msg = (
+	0=>"",
+	1=>"Se ha producido un error inesperado. Reintente luego", # error de base de datos
+	2=>"Su usuario no está habilitado. Comuníquese con Mesa de Ayuda",
+	3=>"Ha errado demasiadas veces su contraseña. Debe esperar un minuto antes de reintentar el ingreso",
+	4=>"Usuario o contraseña incorrecta",
+	10=>"No se puede abrir la sesión en el Portal. Reintente luego",
+	20=>"Parámetros incorrectos",
+	21=>"Parámetros adicionales incorrectos",
+	22=>"Se esperaba entrada en formato JSON",
+	23=>"No se puede decodificar la entrada JSON",
+	99=>"Error inesperado"
+);
+
+if (lc($ENV{CONTENT_TYPE}) ne 'application/json') {
+	# No vienen los parámetros como json
+	error($msg{22}." y vino ".lc($ENV{CONTENT_TYPE}), 22);
+}
+
+my $rinput = eval { decode_json param('POSTDATA') };
+
+if (!defined($rinput->{uuid})) {
+	# parámetros incorrectos, no viene el uuid
+	error($msg{23}, 23);
+}
+
+
+#
+# Obtengo usuario y contraseña desde los parámetros
+#
+
+my $user = checkFormat($rinput->{user}, 'u\d+');
+my $passwd = checkFormat($rinput->{password}, '[a-zA-Z0-9áéíóúñäëïöüÁÉÍÓÚÑÄËÏÖÜçÇ,;.:ºª!|"@·#$~%&¬/()=?¿¡+*{} 	_-]+');
+
+if (!$user || !$passwd) {
+	# parámetros incorrectos
+	error($msg{20}, 20);
+}
+
+#
+# Obtengo el resto de los parámetros esperados
+#
+
+my %info;
+$info{UUID} = checkFormat($rinput->{uuid}, '[\w-]+');
+$info{so} = checkFormat($rinput->{so}, '[ ,;._(){}[\]\w-]+');
+$info{versionSo} = checkFormat($rinput->{versionSo}, '[ ,;._(){}[\]\w-]+');
+$info{marca} = checkFormat($rinput->{marca}, '[ ,;._(){}[\]\w-]+');
+$info{modelo} = checkFormat($rinput->{modelo}, '[ ,;._(){}[\]\w-]+');
+$info{version} = checkFormat($rinput->{version}, '[ ,;._(){}[\]\w-]+');
+$info{UserId} = $user;
+
+if (!$info{UUID} || !$info{so} || !$info{versionSo} || !$info{marca} || !$info{modelo} || !$info{version}) {
+
+	# parámetros incorrectos
+	addlog_db($user,21,"Usuario $user, parámetros incorrectos: ".
+		"uuid=$rinput->{uuid} so=$rinput->{so} version=$rinput->{versionSo} ".
+		"marca=$rinput->{marca} modelo=$rinput->{modelo} version=$rinput->{version}"
+	);
+	error($msg{21}, 21);
+}
+
+
+#
+# Preparo el hash con la salida del script
+#
+
+my %salida = (timestamp => DateTime->now(time_zone=>'-0300')->strftime('%Y%m%d%H%M%S'));
+
+#
+# Valido que la contraseña sea la correcta
+#
+
+$salida{status} = validatePassword($user, $passwd);
+if ($salida{status} != 0) {
+	# la contraseña no es válida
+	update_celular(0, %info);
+	addlog_db($user,1,"Usuario $user , Contraseña incorrecta desde celular");
+} else {
+	# la contraseña está bien
+	$salida{token} = newSession($user);
+	$salida{perId} = perid($user);
+	if (!$salida{token} || !$salida{perId}) {
+		# error si falla la creación de la sesión o no encuentro el perId
+		$salida{status} = 10;
+	} else {
+		addlog_db($user,1,"Usuario $user , Ingreso exitoso desde celular");
+
+		update_celular(1, %info);
+	}
+}
+
+# Obtengo el texto del mensaje de error si corresponde:
+if ($salida{status} > 0) {
+	$salida{statusMsg} = $msg{$salida{status}} || 'ERROR';
+}
+
+# Convierto el status a numérico:
+$salida{status} += 0;
+
+# Genero el HTML final:
+print header(-charset=>'utf-8', -type=>'application/json');
+print encode_json \%salida;
+print "\n";
+
+exit (0);
+
+######################################################################
+
+sub update_celular($%) {
+        my($ok,%info) = @_;
+
+	# fijo la TZ en -0300 porque con local me toma el DST aunque para linux no está vigente
+        my $fecha = DateTime->now(time_zone=>'-0300')->strftime('%F %H:%M:%S');
+
+	my %valores = (UUID=>$info{UUID},
+		so=>$info{so},
+		versionSo=>$info{versionSo},
+		marca=>$info{marca},
+		modelo=>$info{modelo},
+		version=>$info{version},
+		lastValidate=>'1000-01-01',
+		lastClose=>'1000-01-01'
+	);
+
+	my $sql;
+
+	if ($ok) {
+
+		$valores{UserIntLog}=0;
+		$valores{lastError}='1000-01-01';
+		$valores{lastOK}=$fecha;
+		$valores{UserId}=$info{UserId};
+
+		$sql = "INSERT into CELULARES (". join(',',keys %valores).
+		      ") values ('". join("','",values %valores) ."') ".
+		      "on duplicate key UPDATE UserIntLog=0,lastOK='$fecha',UserId='$info{UserId}'";
+	} else {
+
+		$valores{UserIntLog}=1;
+		$valores{lastError}=$fecha;
+		$valores{lastOK}='1000-01-01';
+		$valores{UserId}='';
+
+		$sql = "INSERT into CELULARES (". join(',',keys %valores).
+		      ") values ('". join("','",values %valores) ."') ".
+		      "on duplicate key UPDATE UserIntLog=UserIntLog+1,lastError='$fecha'";
+		
+	}
+
+        ($::debug) and print "$sql<br>\n";
+
+        $::dbh_portal->do($sql);
+
+        return $::dbh_portal->{'mysql_errno'};
+}
+
+sub perid($) {
+	my ($userid) = @_;
+
+	my $sth = dbGet($::dbh_portal,
+			"SEGUSUARIOS",
+			["perid"],
+			"userid='$userid'",
+			"");
+
+	($sth) || error("No se puede consultar la base de datos: ".$DBD::errstr,404);
+
+	my @row = $sth->fetchrow_array;
+	$sth->finish;
+
+	return $row[0];
+}
+
+sub error($;$) {
+	my ($texto,$codigo) = @_;
+
+	($codigo) or $codigo=99;
+
+	print header(-charset=>'utf-8', -type=>'application/json');
+	print encode_json {status=>$codigo, statusMsg=>$texto};
+	print "\n";
+
+	exit(0);
+}
+
+{ no warnings 'redefine';
+  sub portal3::error($;$) { ::error($_[0],$_[1]); }
+}
+

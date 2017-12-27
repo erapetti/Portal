@@ -34,6 +34,7 @@ if ($userid eq 'u19724241') {
 	#$userid='u29072123'; # director
 	#$userid='u17051361'; # Direccion general
 	#$userid='u40554843'; # Melisa
+	#$userid='u40529521'; # Andres Alaniz
 }
 
 if ($dependid !~ /^\d+$/ or $lugarid !~ /^\d+$/) {
@@ -76,8 +77,6 @@ my %tvars;
 $tvars{nombre} = $info{nombre};
 $tvars{hayNotificaciones} = notifications($userid);
 $tvars{url_login} = portal_url("login");
-
-# $page->process("junta.tt/puntaje", \%vars, \$tvars{puntajes});
 
 # determino el ambiente:
 $tvars{ambiente} =  $::ambiente;
