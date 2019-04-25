@@ -14,7 +14,7 @@ module.exports = {
     },
   },
 
-  fn: async function (inputs,exits) {
+  fn: function (inputs,exits) {
     if (inputs.ip === 'undefined') {
       // me cubro con un valor razonable
       inputs.ip = "127.0.0.1";

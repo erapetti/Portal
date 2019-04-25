@@ -5,16 +5,6 @@
  * @docs        :: https://sailsjs.com/docs/concepts/models-and-orm/models
  */
 
-async function mkSessionId () {
-  var crypto = require('crypto');
-
-  let randomArr = await crypto.randomBytes(8);
-  let randomHex = ('0000000000000000' + randomArr.toString('hex')).substr(-16,16);
-  // en javascript no puedo tener enteros de más de 53 bits, entonces uso strings de números:
-  let sessionId = (parseInt(randomHex.substr(0,8),16).toString() + parseInt(randomHex.substr(8,8),16).toString()).substr(-19,19);
-  return sessionId;
-}
-
 function userId2documento (userId) {
   let paisCod;
   let docCod;
@@ -66,6 +56,17 @@ module.exports = {
   },
 
   newSession: async function (userId) {
+
+    async function mkSessionId () {
+      const crypto = require('crypto');
+
+      let randomArr = await crypto.randomBytes(8);
+      let randomHex = ('0000000000000000' + randomArr.toString('hex')).substr(-16,16);
+      // en javascript no puedo tener enteros de más de 53 bits, entonces uso strings de números:
+      let sessionId = (parseInt(randomHex.substr(0,8),16).toString() + parseInt(randomHex.substr(8,8),16).toString()).substr(-19,19);
+      return sessionId;
+    }
+
     // Genero el id de sesión:
     let sessionId = await mkSessionId();
     // Aprovecho para borrar sesiones vencidas:

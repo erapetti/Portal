@@ -12,12 +12,12 @@
       }
     </script>
     <style>
-      div#background {background-image:url('<%= sails.config.custom.basePath %>/images/background.jpg?1552053041');}
+      div#background {background-image:url('<%= sails.config.custom.basePath %>/images/background.jpg<% if (mtime) { %>?<%= mtime %><% } %>');}
     </style>
 
     <div id="background" class="d-none d-sm-block"></div>
 
-    <div id="descripcion" class="d-none d-sm-block">Inicio de clases - Liceo Nº32 de Montevideo</div>
+    <div id="descripcion" class="d-none d-sm-block"><%= descripcion %></div>
 
     <div class="container">
 

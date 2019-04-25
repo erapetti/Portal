@@ -80,6 +80,6 @@ module.exports = {
 };
 
 Date.prototype.fechahora_toString = function() {
-        var sprintf = require("sprintf");
+        const sprintf = require("sprintf");
         return sprintf("%04d-%02d-%02d %02d:%02d:%02d", this.getFullYear(),this.getMonth()+1,this.getDate(),this.getHours(),this.getMinutes(),this.getSeconds());
 };

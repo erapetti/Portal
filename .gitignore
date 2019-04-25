@@ -130,3 +130,6 @@ lib-cov
 *.out
 *.pid
 .*.swp
+package-lock.json
+respaldo.tgz
+
