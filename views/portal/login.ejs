@@ -1,0 +1,88 @@
+    <script type="text/javascript">
+    	// Intento salir del iframe
+    	try {
+    		if (window.self !== window.top) {
+    			window.top.location.href = "<%= sails.config.custom.baseUrl %>";
+    		}
+    	} catch(e) {
+    		window.top.location.href = "<%= sails.config.custom.baseUrl %>";
+    	}
+      if (window.location.href !== "<%= sails.config.custom.baseUrl %>") {
+        windows.location.href = "<%= sails.config.custom.baseUrl %>";
+      }
+    </script>
+    <style>
+      div#background {background-image:url('<%= sails.config.custom.basePath %>/images/background.jpg?1552053041');}
+    </style>
+
+    <div id="background" class="d-none d-sm-block"></div>
+
+    <div id="descripcion" class="d-none d-sm-block">Inicio de clases - Liceo Nº32 de Montevideo</div>
+
+    <div class="container">
+
+      <form class="form-signin" method="POST" action="<%= sails.config.custom.basePath %>/">
+
+      	<div class="panel panel-default">
+      	  <div class="panel-body"><img src="<%= sails.config.custom.basePath %>/images/ces.png" class="ces-logo"></div>
+      	  <div class="panel-body">
+      	    <h2 class="form-signin-heading">Portal de Servicios</h2>
+
+            <% if (typeof mensaje !== "undefined") { %><div class="alert alert-danger" role="alert"><%= mensaje %></div><% } %>
+
+      	    <div class="form-group has-feedback ces-login">
+          		<label for="userid" class="sr-only">Usuario</label>
+          		<input type="text" name="userid" id="userid" class="form-control" placeholder="u12345678" autofocus required>
+          		<span class="fas fa-user form-control-feedback"></span>
+      	    </div>
+      	    <div class="form-group has-feedback ces-login">
+          		<label for="password" class="sr-only">Contraseña</label>
+          		<input type="password" name="password" id="password" class="form-control" placeholder="contraseña"  required>
+          		<span class="fas fa-lock form-control-feedback"></span>
+      	    </div>
+      	    <button class="btn btn-lg btn-primary btn-block" type="submit" id="btn-submit">Iniciar sesión</button>
+
+      	  </div>
+      	</div>
+      	<div class="panel panel-default">
+      	  <div class="panel-body center">
+            <table id="opciones">
+              <tbody>
+                <tr>
+                  <td><a href="#modal-usuario" data-toggle="modal" data-target="#modal-usuario">Olvidé el usuario</a></td>
+                  <td>|</td>
+                  <td><a href="https://www.ces.edu.uy/pwm/public/ForgottenPassword?PwmLocale=es">Olvidé la contraseña</a></td>
+                </tr>
+                <tr>
+                  <td><a href="#">Solicitar usuario</a></td>
+                  <td>|</td>
+                  <td><a href="https://www.ces.edu.uy/pwm/public/ActivateUser">Activar usuario</a></td>
+                </tr>
+              </tbody>
+            </table>
+      	  </div>
+      	</div>
+
+        <input type="hidden" name="secret" value="<%= secret %>" />
+        <% if (r64) { %><input type="hidden" name="r64" value="<%= r64 %>" /><% } %>
+      </form>
+
+    </div> <!-- /container -->
+
+
+    <!-- ayuda olvidé el usuario: -->
+    <div class="modal fade" id="modal-usuario" role="dialog" tabindex="-1">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <h2>Usuario del Portal de Servicios</h2>
+    		<p>Para los usuarios registrados con cédula de identidad uruguaya, el usuario se compone de la letra "u" seguida de la cédula de identidad, sin puntos ni guión, incluyendo el dígito verificador.</p>
+    		<p>Por ejemplo, si su cédula es 1.234.567-8, su usuario será: u12345678.</p>
+    		<p>En otros casos, comuníquese con nuestra mesa de ayuda, al 2908 98 80 int. 1.</p>
+    	    </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>

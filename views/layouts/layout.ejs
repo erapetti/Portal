@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><% if (typeof title !== "undefined") {%><%= title %><% } %></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <!--STYLES-->
+    <link rel="stylesheet" href="/styles/all.min.css">
+    <link rel="stylesheet" href="/styles/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="/styles/ie10-viewport-bug-workaround.css">
+    <link rel="stylesheet" href="/styles/portal.css">
+    <link rel="stylesheet" href="/styles/signin.css">
+    <!--STYLES END-->
+  </head>
+
+  <body>
+    <%- body %>
+
+    <!--TEMPLATES-->
+    
+    <!--TEMPLATES END-->
+    <!--SCRIPTS-->
+    <script src="/js/dependencies/0_jquery/jquery.min.js"></script>
+    <script src="/js/dependencies/1_bootstrap/bootstrap.min.js"></script>
+    <script src="/js/ie10-viewport-bug-workaround.js"></script>
+    <!--SCRIPTS END-->
+  </body>
+</html>

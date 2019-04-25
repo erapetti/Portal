@@ -1,0 +1,25 @@
+body {margin:0;padding:0;background-color:#fff;font-size:16px;}
+div#background {background-size:cover;background-repeat:no-repeat;color:#043d83;padding-top:0;padding-bottom:0;background-position:center center;background-attachment:fixed;position:fixed;left:0;right:0;z-index:-1;display:block;width:100%;height:100%;/*opacity:0.7;*/}
+div.container {overflow:auto; position:relative; top:0; padding:0}
+div.ces-login span.fas {top:-2.2rem;left:0.5rem;color:#bbb;position:relative;display:inline;z-index:2;}
+div.ces-login input.form-control {padding-left:2rem;}
+div.ces-login {margin:0;}
+div.container form {padding-top:0;min-width:20rem;padding:0}
+.center {text-align:center;margin:0 auto}
+div.g-signin2 {width:120px;margin:0 auto}
+h2.form-signin-heading {white-space:nowrap;text-align:center;padding-bottom:0.5rem}
+img.ces-logo {opacity:0.7;margin-left:auto;margin-right:auto;display:block}
+div.container div.panel {background-color:rgba(255,255,255,0.8);border-radius:0}
+div.container div.alert {margin-top:0.5rem}
+div#descripcion {padding:1rem; margin:1rem; position:absolute; top:0; left:0; background-color:rgba(255,255,255,0.7); border-radius:0}
+div#descripcion h1 {font-size:100%; text-align:center; font-weight:bold; margin:0}
+div.container #btn-submit {background-color:#566165; color:#f1f3f3; border-color:#566165;}
+div.container h2 {color:#566165;}
+div.container div.panel-body {padding:1rem 0 1rem 0;}
+div.container form div.panel-body {padding:1rem;}
+div.container form.form-signin input {margin:0 !important;}
+div.container div.panel {margin-bottom:1.5rem;}
+table#opciones {margin-left:auto;margin-right:auto;}
+table#opciones td:first-child {text-align:right;padding-right:1rem;}
+table#opciones td:last-child {text-align:left;padding-left:1rem;}
+table#opciones a {font-size:87%;}
