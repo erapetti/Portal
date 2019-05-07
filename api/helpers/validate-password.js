@@ -7,7 +7,7 @@ module.exports = {
   description: 'Valida usuario y contraseña contra el directorio LDAP',
 
   inputs: {
-    userid: { type: 'string', example: 'u12345678', description: 'userid del Portal', required: true },
+    userId: { type: 'string', example: 'u12345678', description: 'userId del Portal', required: true },
     password: { type: 'string' },
     ip: { type:'string' },
   },
@@ -23,12 +23,12 @@ module.exports = {
 
   fn: async function (inputs,exits) {
 
-        async function LDAPvalidate(userid,password) {
+        async function LDAPvalidate(userId,password) {
           const { Client } = require('ldapts');
           const url = sails.config.LDAPurl;
           const client = new Client({ url, });
           try {
-            await client.bind('uid='+ userid +',ou=People,o=ces', password);
+            await client.bind('uid='+ userId +',ou=People,o=ces', password);
           } catch (ex) {
             throw 'LDAPbindError';
           } finally {
@@ -44,7 +44,7 @@ module.exports = {
           return exits.error(new Error("Hay demasiadas equivocaciones desde su dirección. Debe esperar un minuto antes de reintentar el ingreso"));
         }
 
-        let usuario = await SEGUSUARIOS.findOne({UserId:inputs.userid});
+        let usuario = await SEGUSUARIOS.findOne({UserId:inputs.userId});
         if (!(usuario.UserEstado==2 && usuario.UserHab==1)) {
           return exits.error(new Error("Su usuario no está habilitado. Comuníquese con Mesa de Ayuda"));
         }
@@ -52,17 +52,17 @@ module.exports = {
           return exits.error(new Error("Se ha equivocado demasiadas veces. Debe esperar un minuto antes de reintentar el ingreso"));
         }
         try {
-          await LDAPvalidate(inputs.userid, inputs.password);
+          await LDAPvalidate(inputs.userId, inputs.password);
           try {
             // la contraseña es correcta, registro el ingreso:
-            await SEGUSUARIOS.loginSuccess(inputs.userid);
+            await SEGUSUARIOS.loginSuccess(inputs.userId);
             await sails.memcached.Set(memkey, {UserIntLog:0}, sails.config.memcachedTTL);
           } catch (ignore) { }
 
         } catch (err) {
           // la contraseña es incorrecta, registro el error:
           try {
-            await SEGUSUARIOS.loginError(inputs.userid);
+            await SEGUSUARIOS.loginError(inputs.userId);
             let ipInfo;
             try {
               ipInfo = await sails.memcached.Get(memkey);

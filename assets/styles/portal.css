@@ -1,25 +1,61 @@
-body {margin:0;padding:0;background-color:#fff;font-size:16px;}
-div#background {background-size:cover;background-repeat:no-repeat;color:#043d83;padding-top:0;padding-bottom:0;background-position:center center;background-attachment:fixed;position:fixed;left:0;right:0;z-index:-1;display:block;width:100%;height:100%;/*opacity:0.7;*/}
-div.container {overflow:auto; position:relative; top:0; padding:0}
-div.ces-login span.fas {top:-2.2rem;left:0.5rem;color:#bbb;position:relative;display:inline;z-index:2;}
-div.ces-login input.form-control {padding-left:2rem;}
-div.ces-login {margin:0;}
-div.container form {padding-top:0;min-width:20rem;padding:0}
-.center {text-align:center;margin:0 auto}
-div.g-signin2 {width:120px;margin:0 auto}
-h2.form-signin-heading {white-space:nowrap;text-align:center;padding-bottom:0.5rem}
-img.ces-logo {opacity:0.7;margin-left:auto;margin-right:auto;display:block}
-div.container div.panel {background-color:rgba(255,255,255,0.8);border-radius:0}
-div.container div.alert {margin-top:0.5rem}
-div#descripcion {padding:1rem; margin:1rem; position:absolute; top:0; left:0; background-color:rgba(255,255,255,0.7); border-radius:0}
-div#descripcion h1 {font-size:100%; text-align:center; font-weight:bold; margin:0}
-div.container #btn-submit {background-color:#566165; color:#f1f3f3; border-color:#566165;}
-div.container h2 {color:#566165;}
-div.container div.panel-body {padding:1rem 0 1rem 0;}
-div.container form div.panel-body {padding:1rem;}
-div.container form.form-signin input {margin:0 !important;}
-div.container div.panel {margin-bottom:1.5rem;}
-table#opciones {margin-left:auto;margin-right:auto;}
-table#opciones td:first-child {text-align:right;padding-right:1rem;}
-table#opciones td:last-child {text-align:left;padding-left:1rem;}
-table#opciones a {font-size:87%;}
+body#login {margin:0;padding:0;background-color:#fff;font-size:16px;}
+body#login div#background {background-size:cover;background-repeat:no-repeat;color:#043d83;padding-top:0;padding-bottom:0;background-position:center center;background-attachment:fixed;position:fixed;left:0;right:0;z-index:-1;display:block;width:100%;height:100%;/*opacity:0.7;*/}
+body#login div.container {overflow:auto; position:relative; top:0; padding:0}
+body#login div.ces-login span.fas {top:-2.2rem;left:0.5rem;color:#bbb;position:relative;display:inline;z-index:2;}
+body#login div.ces-login input.form-control {padding-left:2rem;}
+body#login div.ces-login {margin:0;}
+body#login div.container form {padding-top:0;min-width:20rem;padding:0}
+body#login .center {text-align:center;margin:0 auto}
+body#login div.g-signin2 {width:120px;margin:0 auto}
+body#login h2.form-signin-heading {white-space:nowrap;text-align:center;padding-bottom:0.5rem}
+body#login img.ces-logo {opacity:0.7;margin-left:auto;margin-right:auto;display:block}
+body#login div.container div.panel {background-color:rgba(255,255,255,0.8);border-radius:0}
+body#login div.container div.alert {margin-top:0.5rem}
+body#login div#descripcion {padding:1rem; margin:1rem; position:absolute; top:0; left:0; background-color:rgba(255,255,255,0.7); border-radius:0}
+body#login div#descripcion h1 {font-size:100%; text-align:center; font-weight:bold; margin:0}
+body#login div.container #btn-submit {background-color:#566165; color:#f1f3f3; border-color:#566165;}
+body#login div.container h2 {color:#566165;}
+body#login div.container div.panel-body {padding:1rem 0 1rem 0;}
+body#login div.container form div.panel-body {padding:1rem;}
+body#login div.container form.form-signin input {margin:0 !important;}
+body#login div.container div.panel {margin-bottom:1.5rem;}
+body#login table#opciones {margin-left:auto;margin-right:auto;}
+body#login table#opciones td:first-child {text-align:right;padding-right:1rem;}
+body#login table#opciones td:last-child {text-align:left;padding-left:1rem;}
+body#login table#opciones a {font-size:87%;}
+
+body#principales nav {background-color:#003c5b;border-color:#032a59;color:#d2d2d2;border-radius:0;z-index:1;margin:0;padding:0;height:50px;}
+body#principales nav img#logo {margin-left:15px;margin-top:1px}
+body#principales nav a {outline:0;white-space:nowrap;text-decoration:none}
+body#principales nav a.navbar-brand {padding:0 !important}
+body#principales nav ul > li > a {background-color:#003c5b;color:#d2d2d2}
+body#principales nav ul > li.dropdown-header {background-color:#003c5b;color:#fff;font-size:1.25rem;padding:0.5rem}
+body#principales nav ul {background-color:#003c5b;border-color:#032a59;flex-wrap:nowrap}
+body#principales nav .input-group {flex-wrap:nowrap;white-space:nowrap;font-size:0.875rem}
+body#principales nav form div.form-group {margin:0;color:#504646;width:15rem;max-width:15rem;height:35px}
+body#principales nav input.form-control {font-size:0.875rem}
+body#principales nav input#search {background-color:#d2d2d2;border-color:#032a59;color:#000;padding-right:1.5rem;text-align:left}
+body#principales nav div.tt-dataset {background-color:#003c5b;border-color:#032a59;color:#d2d2d2;padding:4px;cursor:pointer;white-space:nowrap}
+body#principales nav div.input-group span.fas {left:-1.5rem;position:relative}
+body#principales nav ul#right-side a.dropdown-toggle::after {display:none}
+body#principales nav #li-email {min-width:5.75rem}
+body#principales nav span.badge {background-color:#d2d2d2;color:#504646;vertical-align:top;font-size:x-small}
+body#principales nav span.badge.red {background-color:#ed3237;color:#fff}
+body#principales nav li.sin-link {padding-top:0.3rem}
+body#principales nav li.sin-link a {color:#bbb;font-weight:bold}
+body#principales nav li.nivel1 {padding-left:4px}
+body#principales nav li.nivel2 {padding-left:8px}
+body#principales nav li.nivel3 {padding-left:12px}
+body#principales nav li.nivel4 {padding-left:16px}
+body#principales nav li.nivel5 {padding-left:20px}
+body#principales nav li.nivel6 {padding-left:24px}
+
+body#principales div#iframe {position:relative;height:calc(100vh - 57px);max-width:100vw;margin:0;padding:0;z-index:0}
+body#principales iframe {border:0;margin:0;padding:0;position:absolute;width:100%;height:100%;top:0;left:0;bottom:0;display:block}
+body#principales div#cortina {position:absolute;top:0;left:0;width:100%;height:100%;z-index:2;background-color:rgba(0,0,0,0.3)}
+body#principales html,body {height:100%;padding:0;margin:0}
+body#principales html {overflow-y:auto}
+
+body#principales ul#favoritos {margin-left:15px;margin-right:15px;justify-content:space-between;width:100%}
+body#principales ul#favoritos i {margin-right:0.5rem;margin-left:1rem}
+body#principales ul#favoritos li:first-child i {margin-left:0}

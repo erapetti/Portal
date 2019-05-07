@@ -28,18 +28,25 @@ module.exports.routes = {
     controller: 'portal',
     action: 'principales',
   },
-  '/cgi-bin/portal/principales': {
-    controller: 'portal',
-    action: 'principales',
-  },
 
   '/logout': {
     controller: 'portal',
     action: 'logout',
   },
-  '/cgi-bin/portal/logout': {
+
+  '/correo': {
     controller: 'portal',
-    action: 'logout',
+    action: 'correo',
+  },
+
+  '/favoritos': {
+    controller: 'portal',
+    action: 'favoritos',
+  },
+
+  '/contar': {
+    controller: 'portal',
+    action: 'contar',
   },
 
   /***************************************************************************

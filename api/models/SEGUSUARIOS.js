@@ -9,34 +9,47 @@ module.exports = {
   datastore: 'Portal',
   migrate: 'safe',
   tableName: 'SEGUSUARIOS',
-  primaryKey: 'UserId',
   attributes: {
-          UserId: {type: 'string', required: true },
+          id: { type:'string', columnName:'UserId', required:true },
           UserMail: 'string',
           UserRnd: 'number',
           UserIntLog: 'number',
           UserEstado: 'number',
           UserHab: 'number',
-          UserDate: { type: 'ref', columnType: 'datetime' },
-          UserFchLog: { type: 'ref', columnType: 'datetime' },
-          PerId: { model: 'PERSONAS' },
+          UserDate: { type:'ref', columnType:'datetime' },
+          UserFchLog: { type:'ref', columnType:'datetime' },
+          PerId: { model:'PERSONAS' },
+          grupos: { collection:'SEGRELACION_GRUPO_USUARIO', via:'UserId' },
   },
 
-  loginSuccess: async function(userid) {
+/* _             _       ____
+  | | ___   __ _(_)_ __ / ___| _   _  ___ ___ ___  ___ ___
+  | |/ _ \ / _` | | '_ \\___ \| | | |/ __/ __/ _ \/ __/ __|
+  | | (_) | (_| | | | | |___) | |_| | (_| (_|  __/\__ \__ \
+  |_|\___/ \__, |_|_| |_|____/ \__,_|\___\___\___||___/___/
+           |___/
+*/
+  loginSuccess: async function(id) {
     await this.getDatastore().sendNativeQuery(`
       UPDATE SEGUSUARIOS
       SET UserIntLog = 0, UserFchLog = now()
       WHERE UserId = $1
-    `, [userid]);
+    `, [id]);
   },
 
-  loginError: async function(userid) {
-    let err =
+/*    _             _       _____
+     | | ___   __ _(_)_ __ | ____|_ __ _ __ ___  _ __
+     | |/ _ \ / _` | | '_ \|  _| | '__| '__/ _ \| '__|
+     | | (_) | (_| | | | | | |___| |  | | | (_) | |
+     |_|\___/ \__, |_|_| |_|_____|_|  |_|  \___/|_|
+              |___/
+*/
+  loginError: async function(id) {
     await this.getDatastore().sendNativeQuery(`
       UPDATE SEGUSUARIOS
       SET UserIntLog = UserIntLog+1, UserDate = now()
       WHERE UserId = $1
-    `, [userid]);
+    `, [id]);
   },
 
 };

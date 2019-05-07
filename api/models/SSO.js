@@ -9,17 +9,16 @@ module.exports = {
   datastore: 'sso',
   migrate: 'safe',
   tableName: 'sso',
-  primaryKey: 'UserId',
   attributes: {
-    UserId: { type:'string', required: true },
+    id: { type:'string', columnName:'UserId', required:true },
     email: 'string',
     Clave: 'string',
-    fecha: { type: 'ref', columnType: 'datetime' },
-    activa: { type: 'string', isIn: ['S','N'] },
+    fecha: { type:'ref', columnType:'datetime' },
+    activa: { type:'string', isIn:['S','N'] },
   },
 
-  email: async function (userid) {
-    let sso = await this.findOne({UserId:userid,activa:'S'});
+  email: async function (id) {
+    let sso = await this.findOne({id:id, activa:'S'});
     return (typeof sso === 'undefined' ? undefined : sso.email);
   },
 };

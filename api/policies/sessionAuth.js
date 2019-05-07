@@ -16,8 +16,8 @@ module.exports = async function(req, res, next) {
       req.sesion = await SEGSESIONES.getSession(sessionId);
     } catch (ignore) { }
   }
-  if (!req.sesion && !(req.options && req.options.action == "portal/login")) {
-    sails.log("redirect to / porque no hay sesion y req.url=",req.url);
+  if (!req.sesion && !(req.options && (req.options.action=="portal/login" || req.options.action=="portal/correo"))) {
+    sails.log.debug("redirect to / porque no hay sesion y req.url=",req.url);
     return res.redirect(sails.config.custom.baseUrl);
   }
   return next();

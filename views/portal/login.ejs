@@ -8,14 +8,11 @@
     		window.top.location.href = "<%= sails.config.custom.baseUrl %>";
     	}
       if (window.location.href !== "<%= sails.config.custom.baseUrl %>") {
-        windows.location.href = "<%= sails.config.custom.baseUrl %>";
+        window.location.href = "<%= sails.config.custom.baseUrl %>";
       }
     </script>
-    <style>
-      div#background {background-image:url('<%= sails.config.custom.basePath %>/images/background.jpg<% if (mtime) { %>?<%= mtime %><% } %>');}
-    </style>
 
-    <div id="background" class="d-none d-sm-block"></div>
+    <div id="background" class="d-none d-sm-block" style="background-image:url('<%= sails.config.custom.basePath %>/images/background.jpg<% if (mtime) { %>?<%= mtime %><% } %>');"></div>
 
     <div id="descripcion" class="d-none d-sm-block"><%= descripcion %></div>
 

@@ -12,7 +12,7 @@
     <!--STYLES END-->
   </head>
 
-  <body>
+  <body<% if (typeof id !== 'undefined') { %> id="<%= id %>"<% } %>>
     <%- body %>
 
     <!--TEMPLATES-->
@@ -22,6 +22,8 @@
     <script src="/js/dependencies/0_jquery/jquery.min.js"></script>
     <script src="/js/dependencies/1_bootstrap/bootstrap.min.js"></script>
     <script src="/js/ie10-viewport-bug-workaround.js"></script>
+    <script src="/js/portal.js"></script>
+    <script src="/js/typeahead.bundle.js"></script>
     <!--SCRIPTS END-->
   </body>
 </html>

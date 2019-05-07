@@ -1,1 +1,122 @@
-<a href="logout">logout</a>
+<nav class="navbar navbar-expand-lg navbar-dark navbar-ces">
+
+  <a class="navbar-brand hidden-xs hidden-sm" href="<%- sails.config.paths.noticias_portada %>" target="content" data-toggle="tooltip" title="Volver al inicio">
+    <img id="logo" src="<%- sails.config.custom.basePath %><%- sails.config.paths.logo %>" width="117" height="48">
+  </a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#myNavbar" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse justify-content-between" id="myNavbar">
+
+    <ul class="navbar-nav" id="left-side">
+    <% if (typeof menues !== "undefined") { %>
+      <% for (m in menues) { %>
+        <% if (menues[m].length > 0) { _%>
+        <li class="nav-item dropdown px-3">
+          <a class="nav-link dropdown-toggle btn-sm" data-toggle="dropdown" href="#"><%- m %></a>
+          <ul class="dropdown-menu">
+            <% menues[m].forEach(function(o){ _%>
+              <li class="nivel<%- o.nivel %><% if (!o.MenuObjPath && !o.MenuObjId) {%> sin-link navbar-link<% } %>">
+                <a class="btn-sm"<% if (o.MenuObjPath) { %> href="<%- o.MenuObjPath %><% if (o.MenuObjId) { %><%-o.MenuObjId %><% } %>"<% if (o.MenuIFRAME) { %> target="content"<% } %><% } %>><%- o.MenuSubTitulo %></a>
+              </li>
+            <% }) _%>
+          </ul>
+        </li>
+        <% } _%>
+      <% } %>
+    <% } %>
+
+      <li class="nav-item dropdown px-3" id="buscador">
+        <form class="navbar-form" role="search" id="searchform">
+          <div class="input-group input-group-sm">
+            <div class="form-group has-feedback">
+              <input type="text" id="search" class="form-control input-group-text" placeholder="Buscar en el menú" name="q">
+              <span class="fas fa-search form-control-feedback"></span>
+            </div>
+          </div>
+        </form>
+      </li>
+    </ul>
+
+    <ul class="navbar-nav" id="right-side">
+
+    <% if (hay_email) { _%>
+      <li class="nav-item dropdown px-3" id="li-email">
+        <a class="nav-link" href="<%- sails.config.paths.correo %>" target="_blank" id="email" data-toggle="tooltip" title="Abrir correo electrónico"><span class="fas fa-envelope"></span> <span class="badge badge-light" id="emails"></span></a>
+      </li>
+    <% } _%>
+
+    <% if (typeof dependencias !== "undefined" && dependencias.length>0) { _%>
+      <li class="nav-item dropdown px-3" id="li-depend">
+        <a class="nav-link dropdown-toggle btn-sm" data-toggle="dropdown" href="#" data-toggle="tooltip" title="Cambiar de dependencia"><span class="fas fa-map-marker-alt"></span><span id="depend"> <%- (typeof dependLugarDesc !== "undefined" ? dependLugarDesc : "") %></span></a>
+        <ul class="dropdown-menu dropdown-menu-right">
+          <li class="dropdown-header"><%- (typeof dependLugarDesc !== "undefined" ? dependLugarDesc : "") %></li>
+          <li class="dropdown-divider"></li>
+          <% dependencias.forEach(function(d){ %>
+            <li><a class="btn-sm" href="?d=<%- d.dependId %>&amp;l=<%- d.lugarId %>"><%- d.dependLugarDesc %></a></li>
+          <% }) %>
+        </ul>
+      </li>
+    <% } %>
+
+      <li class="nav-item dropdown px-3" id="li-nombre">
+        <a class="nav-link dropdown-toggle btn-sm" data-toggle="dropdown" href="#" data-toggle="tooltip" title="Abrir menú del usuario"><span class="fas fa-user"></span><span id="nombre"> <%- nombre %></span></a>
+        <ul class="dropdown-menu dropdown-menu-right">
+          <li class="dropdown-header"><%- nombre %></li>
+          <li class="dropdown-divider"></li>
+          <li><a class="btn-sm" href="https://www.ces.edu.uy/pwm/private/ChangePassword?PwmLocale=es"><span class="fas fa-lock"></span> Cambiar contraseña</a></li>
+          <li><a class="btn-sm" href="https://www.ces.edu.uy/pwm/private/SetupResponses?PwmLocale=es"><span class="fas fa-pencil-alt"></span> Establecer pistas de contraseña</a></li>
+          <li><a class="btn-sm" href="/ces/cgi-bin/pwd/cambiar_datos.pl" target="content"><span class="fas fa-pencil-alt"></span> Actualizar perfil</a></li>
+          <li><a class="btn-sm" href="logout"><span class="fas fa-sign-out-alt"></span> Salir</a></li>
+        </ul>
+      </li>
+    </ul>
+
+  </div>
+</nav>
+
+<nav class="navbar navbar-expand-lg navbar-dark navbar-ces d-none d-lg-flex">
+  <ul class="navbar-nav" id="favoritos"></ul>
+</nav>
+
+<% if (hay_notificaciones) { _%>
+<div id="cortina"></div>
+<% } %>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function(event) {
+
+    <% if (hay_notificaciones) { -%>
+      $("div#iframe").css("z-index","3");
+    	// habilito el acceso al menú cuando las notificaciones estén notificadas
+    	var intervalId = setInterval( function(){
+    		$.ajax({url:"<%- sails.config.paths.hay_notificaciones %>", success:function(result) {
+    			if (result==="0") {
+    				clearInterval(intervalId);
+    				$("div#iframe").css("z-index","0");
+    				$("#cortina").hide();
+    			} }
+    		});
+    	}, 10000);
+    <% } %>
+
+    <% if (hay_email) { -%>
+    	setInterval(refreshEmail,120000);
+      $('a#email').click(function(){ setTimeout(refreshEmail,15000) });
+    	refreshEmail();
+    <% } %>
+
+  });
+</script>
+
+<div id="iframe">
+  <% if (typeof mensaje == "string") { %>
+    <div class="alert alert-danger" role="alert">
+      <h1>ERROR</h1>
+      <pre><%= mensaje %></pre>
+    </div>
+  <% } else { %>
+	   <iframe src=<% if (hay_notificaciones) { %>"<%- sails.config.paths.misnotificaciones %>"<% } else { %>"<%- sails.config.paths.noticias_portada %>"<% } %> name="content" frameborder="0"></iframe>
+  <% } %>
+</div>
