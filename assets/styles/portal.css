@@ -24,12 +24,12 @@ body#login table#opciones td:first-child {text-align:right;padding-right:1rem;}
 body#login table#opciones td:last-child {text-align:left;padding-left:1rem;}
 body#login table#opciones a {font-size:87%;}
 
-body#principales nav {background-color:#003c5b;border-color:#032a59;color:#d2d2d2;border-radius:0;z-index:1;margin:0;padding:0;height:50px;}
+body#principales nav {background-color:#003c5b;border-color:#032a59;color:#d2d2d2;border-radius:0;z-index0:1;margin:0;padding:0;height:50px;}
 body#principales nav img#logo {margin-left:15px;margin-top:1px}
 body#principales nav a {outline:0;white-space:nowrap;text-decoration:none}
 body#principales nav a.navbar-brand {padding:0 !important}
-body#principales nav ul > li > a {background-color:#003c5b;color:#d2d2d2}
-body#principales nav ul > li.dropdown-header {background-color:#003c5b;color:#fff;font-size:1.25rem;padding:0.5rem}
+body#principales nav ul > li > a {background-color0:#003c5b;color:#d2d2d2}
+body#principales nav ul > li.dropdown-header {background-color0:#003c5b;color:#fff;font-size:1.25rem;padding:0.5rem}
 body#principales nav ul {background-color:#003c5b;border-color:#032a59;flex-wrap:nowrap}
 body#principales nav .input-group {flex-wrap:nowrap;white-space:nowrap;font-size:0.875rem}
 body#principales nav form div.form-group {margin:0;color:#504646;width:15rem;max-width:15rem;height:35px}
@@ -50,12 +50,16 @@ body#principales nav li.nivel4 {padding-left:16px}
 body#principales nav li.nivel5 {padding-left:20px}
 body#principales nav li.nivel6 {padding-left:24px}
 
-body#principales div#iframe {position:relative;height:calc(100vh - 57px);max-width:100vw;margin:0;padding:0;z-index:0}
+body#principales div#iframe {position:relative;height:calc(100vh - 120px);max-width:100vw;margin:0;padding:0;z-index:0}
 body#principales iframe {border:0;margin:0;padding:0;position:absolute;width:100%;height:100%;top:0;left:0;bottom:0;display:block}
 body#principales div#cortina {position:absolute;top:0;left:0;width:100%;height:100%;z-index:2;background-color:rgba(0,0,0,0.3)}
 body#principales html,body {height:100%;padding:0;margin:0}
 body#principales html {overflow-y:auto}
 
+body#principales nav#navfavoritos {background-color:#fafafa}
+body#principales nav#navfavoritos ul {background-color:#fafafa}
+body#principales nav#navfavoritos button {color:#003c5b}
+body#principales nav#navfavoritos button a {color:#003c5b}
+body#principales nav#navfavoritos button:hover {background-color:#e6e6e6}
 body#principales ul#favoritos {margin-left:15px;margin-right:15px;justify-content:space-between;width:100%}
-body#principales ul#favoritos i {margin-right:0.5rem;margin-left:1rem}
-body#principales ul#favoritos li:first-child i {margin-left:0}
+body#principales ul#favoritos i {margin-right:0.5rem}
