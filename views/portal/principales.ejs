@@ -77,7 +77,13 @@
 </nav>
 
 <nav class="navbar navbar-expand-lg navbar-dark navbar-ces d-none d-lg-flex" id="navfavoritos">
-  <ul class="navbar-nav" id="favoritos"></ul>
+  <ul class="navbar-nav" id="favoritos">
+  <% if (typeof favoritos !== 'undefined') { %>
+    <% favoritos.forEach(function(f){ %>
+    <button type="button" class="btn d-none"><i class="far fa-star"></i><a href="<%- f.url %>"><%- f.title %></a></button>
+    <% }) %>
+  <% } %>
+  </ul>
 </nav>
 
 <% if (hay_notificaciones) { _%>

@@ -55,31 +55,27 @@ $(function(){
 
 	// ajuste del título de la página
 	$('body#principales a:not([data-toggle])').click(function(){
-		var href=$(this).attr('href').replace(/.*\//,'').replace(/\?.*/,'');
+		const href=$(this).attr('href');
 		if (href === "") {
 			document.title = "Portal de Servicios - Consejo de Educación Secundaria";
-		} else if (href !== "#" && $(this).attr('target') !== "_blank") {
-			document.title = $(this).text() +' :: '+ href;
+      return;
 		}
-    $('body#principales #favoritos').hide();
-    $('body#principales #navfavoritos').css('height',0);
-    $('body#principales #iframe').css('height','calc(100vh - 70px)')
+    if (href !== "#" && $(this).attr('target') !== "_blank") {
+			document.title = $(this).text() +' :: '+ href;
+      ocultarFavoritos();
+		}
+    // cuento el clic
+    $.ajax({url:'contar',data:{url:href},method:'POST'});
 	});
 
   $('body#principales a#ainicio').click(function(){
-    $('body#principales #iframe').css('height','calc(100vh - 120px)')
-    $('body#principales #navfavoritos').css('height',50);
-    $('body#principales #favoritos').show();
+    // restauro la barra de favoritos
+    mostrarFavoritos();
   })
 	// encabezado responsive
 	$(window).resize();
 //	setTimeout(function(){ $(window).resize() }, 900); // a veces hay que esperar a que la página se dibuje para que funcione
 //	setTimeout(function(){ $(window).resize() }, 2900);// a veces hay que esperar a que la página se dibuje para que funcione
-
-  // favoritos
-  if ($('body#principales #favoritos').length > 0) {
-    actualizoFavoritos();
-  }
 });
 
 
@@ -94,19 +90,17 @@ $(window).resize(async function () {
   if (windowWidth != $(window).width()) {
     resized = "";
     windowWidth = $(window).width();
-    resizeFavoritos();
   }
-  if (! $('body#principales .navbar-brand').outerWidth(true)) {
-    return;
-  }
-  if (window.innerWidth < 992) {
+  if ($('body#principales #myNavbar').is(":hidden")) {
     // está colapsado
     $('body#principales #buscador').show();
     $('body#principales #depend').show();
     $('body#principales #nombre').show();
+    ocultarFavoritos();
     return;
   }
-  let maxWidth = windowWidth - $('body#principales .navbar-brand').outerWidth(true);
+  resizeFavoritos();
+  let maxWidth = windowWidth - ($('body#principales .navbar-brand').outerWidth(true) || 0);
   let myNavbarWidth = $('body#principales #myNavbar').outerWidth(true);
 
   if (myNavbarWidth > maxWidth) {
@@ -168,31 +162,37 @@ function refreshEmail() {
   });
 }
 
-function actualizoFavoritos() {
-  $.ajax({url:'favoritos',
-    success:function(data){
-      let favoritos = "";
-      data.forEach(function(item){
-        //favoritos=favoritos.concat("<li class='d-none'><i class='far fa-star'></i><a href='"+item.url+"'>"+item.title+"</a></li>");
-        favoritos=favoritos.concat("<button type='button' class='btn d-none'><i class='far fa-star'></i><a href='"+item.url+"'>"+item.title+"</a></button>");
-      });
-      $('#favoritos').html( favoritos );
-      resizeFavoritos();
-    },
-  });
+function resizeFavoritos() {
+  console.log("entra resize favoritos");
+  // cantidad de caracteres que pueden entrar en el ancho
+  let len = ($('#favoritos').width() / 8) * 0.95;
+  console.log("len:",len);
+  for (let i=0; i<= $('#favoritos button').length; i++) {
+    let btn = $('#favoritos button:eq('+i+')');
+    len=len-btn.text().length-4;
+    console.log("len",len,"entra button",btn.text());
+    if (len>0) {
+      console.log("lo activo");
+      btn.removeClass("d-none");
+    } else {
+      btn.addClass("d-none");
+    }
+  }
+  mostrarFavoritos();
 }
 
-function resizeFavoritos() {
-  let len = ($(window).width() - 30) / 8 - 8;
-  $('#favoritos button').each(function(){
-    len=len-$(this).text().length-4;
-    if (len>0) {
-      $(this).removeClass("d-none");
-    } else {
-      $(this).addClass("d-none");
-    }
-  });
+function mostrarFavoritos() {
+  $('body#principales #iframe').css('height','calc(100vh - 120px)');
+  $('body#principales #navfavoritos').css('height',50);
+  $('body#principales #favoritos').show();
 }
+
+function ocultarFavoritos() {
+  $('body#principales #favoritos').hide();
+  $('body#principales #navfavoritos').css('height',0);
+  $('body#principales #iframe').css('height','calc(100vh - 70px)');
+}
+
 
 if (navigator.userAgent.match(/Firefox\/2[8-9]/) ||
     navigator.userAgent.match(/Firefox\/[3456789][0-9]/) ) {

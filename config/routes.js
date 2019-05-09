@@ -39,11 +39,6 @@ module.exports.routes = {
     action: 'correo',
   },
 
-  '/favoritos': {
-    controller: 'portal',
-    action: 'favoritos',
-  },
-
   '/contar': {
     controller: 'portal',
     action: 'contar',
