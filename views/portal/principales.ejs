@@ -18,7 +18,7 @@
           <ul class="dropdown-menu">
             <% menues[m].forEach(function(o){ _%>
               <li class="nivel<%- o.nivel %><% if (!o.MenuObjPath && !o.MenuObjId) {%> sin-link navbar-link<% } %>">
-                <a class="btn-sm"<% if (o.MenuObjPath) { %> href="<%- o.MenuObjPath %><% if (o.MenuObjId) { %><%-o.MenuObjId %><% } %>"<% if (o.MenuIFRAME) { %> target="content"<% } %><% } %>><%- o.MenuSubTitulo %></a>
+                <a class="btn-sm"<% if (o.MenuObjPath) { %> href="<%= o.MenuObjPath %><% if (o.MenuObjId) { %><%=o.MenuObjId %><% } %>"<% if (o.MenuIFRAME) { %> target="content"<% } %><% } %>><%- o.MenuSubTitulo %></a>
               </li>
             <% }) _%>
           </ul>
@@ -32,7 +32,7 @@
           <div class="input-group input-group-sm">
             <div class="form-group has-feedback">
               <input type="text" id="search" class="form-control input-group-text" placeholder="Buscar en el menú" name="q">
-              <span class="fas fa-search form-control-feedback"></span>
+              <!-- <span class="fas fa-search form-control-feedback"></span> -->
             </div>
           </div>
         </form>
@@ -79,8 +79,8 @@
 <nav class="navbar navbar-expand-lg navbar-dark navbar-ces d-none d-lg-flex" id="navfavoritos">
   <ul class="navbar-nav" id="favoritos">
   <% if (typeof favoritos !== 'undefined') { %>
-    <% favoritos.forEach(function(f){ %>
-    <button type="button" class="btn d-none"><i class="far fa-star"></i><a href="<%- f.url %>"><%- f.title %></a></button>
+    <% favoritos.forEach(function(f){ -%>
+    <a href="<%- f.url %>"<% if (f.iframe) { %> target="content"<% } %> class="btn d-none" ><i class="fas fa-angle-right"></i><%- f.title %></a>
     <% }) %>
   <% } %>
   </ul>

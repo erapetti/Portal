@@ -56,6 +56,7 @@ $(function(){
 	// ajuste del título de la página
 	$('body#principales a:not([data-toggle])').click(function(){
 		const href=$(this).attr('href');
+    console.log("click",href);
 		if (href === "") {
 			document.title = "Portal de Servicios - Consejo de Educación Secundaria";
       return;
@@ -167,8 +168,8 @@ function resizeFavoritos() {
   // cantidad de caracteres que pueden entrar en el ancho
   let len = ($('#favoritos').width() / 8) * 0.95;
   console.log("len:",len);
-  for (let i=0; i<= $('#favoritos button').length; i++) {
-    let btn = $('#favoritos button:eq('+i+')');
+  for (let i=0; i<= $('#favoritos a').length; i++) {
+    let btn = $('#favoritos a:eq('+i+')');
     len=len-btn.text().length-4;
     console.log("len",len,"entra button",btn.text());
     if (len>0) {

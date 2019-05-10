@@ -132,4 +132,4 @@ lib-cov
 .*.swp
 package-lock.json
 respaldo.tgz
-
+assets/drupal/

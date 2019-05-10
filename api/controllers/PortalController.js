@@ -195,23 +195,19 @@ module.exports = {
     if (!req.sesion) {
       return res.json({error:'SESSION TIMEDOUT'});
     }
-    sails.log.info("contar entra con",req.param('url'));
 
     const url = (req.param('url') || '').checkFormat(/[\w\d\/\.? \n()'";=:+-]+/);
     if (typeof url === 'undefined') {
-      sails.log.info("no hay url");
+      sails.log.info("contar: no hay url, entra con",req.param('url'));
       return res.json({error:'URL EXPECTED'});
     }
     let memkey = sails.config.prefix.favoritos+encodeURI(url);
     let ok = await sails.memcached.Incr(memkey, 1);
     if (!ok) {
-      sails.log.info("entra set");
       ok = await sails.memcached.Set(memkey, 1, sails.config.memcachedTTL);
     }
-    sails.log.info("incr",ok);
 
     const aux = await sails.memcached.Get(memkey);
-    sails.log.debug("contar",memkey,aux);
     return res.json();
   },
 
@@ -363,10 +359,8 @@ async function favoritos(sessionId, menues) {
     }
   }
 
-  sails.log.debug(urls);
   try {
     const result = await sails.memcached.GetMulti(urls);
-    sails.log.debug("memcached result",result);
     for (const url in result) {
       for (let i=0; i<favoritos.length; i++) {
         if (encodeURI(sails.config.prefix.favoritos+favoritos[i].url) === url) {
@@ -376,7 +370,6 @@ async function favoritos(sessionId, menues) {
       }
     }
     // elimino los que no tuvieron uso
-    sails.log.debug("len before",favoritos.length);
     for (let i=0; i<favoritos.length; i++) {
       if (favoritos[i].cant == 0) {
         favoritos.splice(i, 1);
@@ -384,25 +377,11 @@ async function favoritos(sessionId, menues) {
       }
     }
     // ordeno los que quedaron
-    sails.log.debug("len after",favoritos.length);
     favoritos = favoritos.sort((a,b) => a.cant < b.cant);
-    sails.log.debug("favoritos",favoritos);
+    // dejo solo los 10 primeros
+    favoritos.splice(10);
     return favoritos;
   } catch (e) {
     return undefined;
   }
-  return [
-    {title:"Recibos de Sueldos",url:"http://localhost:1337/ReciboSueldo2/servlet/inicio_portal"},
-    {title:"Solicitud de Libre Asistido Plan 1994",url:"http://localhost:1337/rt/cgi-bin/libreasistido.pl"},
-    {title:"Recibos de Sueldos",url:"http://localhost:1337/ReciboSueldo2/servlet/inicio_portal"},
-    {title:"Solicitud de Libre Asistido Plan 1994",url:"http://localhost:1337/rt/cgi-bin/libreasistido.pl"},
-    {title:"Recibos de Sueldos",url:"http://localhost:1337/ReciboSueldo2/servlet/inicio_portal"},
-    {title:"Solicitud de Libre Asis",url:"http://localhost:1337/rt/cgi-bin/libreasistido.pl"},
-    {title:"Recibos de Sueldos",url:"http://localhost:1337/ReciboSueldo2/servlet/inicio_portal"},
-    {title:"Solicitud de Libre Asistido Plan 1994",url:"http://localhost:1337/rt/cgi-bin/libreasistido.pl"},
-    {title:"Recibos de Sueldos",url:"http://localhost:1337/ReciboSueldo2/servlet/inicio_portal"},
-    {title:"Solicitud de Libre Asistido Plan 1994",url:"http://localhost:1337/rt/cgi-bin/libreasistido.pl"},
-    {title:"Recibos de Sueldos",url:"http://localhost:1337/ReciboSueldo2/servlet/inicio_portal"},
-    {title:"Solicitud de Libre Asistido Plan 1994",url:"http://localhost:1337/rt/cgi-bin/libreasistido.pl"},
-  ];
 }
