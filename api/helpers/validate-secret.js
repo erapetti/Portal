@@ -26,7 +26,7 @@ module.exports = {
       }
       var seed = inputs.ip.replace(/[^\d]/g,'');
       var mstime = parseInt(inputs.secret.split('.')[0],16);
-      if (((new Date).getTime() - mstime)/1000 > sails.config.secretTimeout) {
+      if (((new Date).getTime() - mstime)/1000 > sails.config.timeout.secret) {
         throw 'error';
       }
       var secret = mstime.toString(16)+'.'+(Math.floor(Math.abs(Math.sin(seed+mstime)) * 1000000000000000)).toString(16);

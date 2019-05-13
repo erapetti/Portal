@@ -149,7 +149,9 @@ module.exports = {
       // Obtengo las opciones de menú para la dependencia actual y la dependencia null
       viewdata.menues = await obtengoMenues(grupos, req.sesion.SesionesDependId, req.sesion.SesionesLugarId);
 
-      viewdata.favoritos = await favoritos(req.sesion.id, viewdata.menues);
+      // Obtengo la lista de favoritos asociada a los menues del usuario
+      viewdata.favoritos = await FAVORITOS.listaFavoritos(viewdata.menues);
+
     } catch(e) {
       viewdata.mensaje = (typeof e.message === 'string' ? e.message : 'Error al generar la página. Reintente luego');
       sails.log.debug(e);
@@ -196,18 +198,13 @@ module.exports = {
       return res.json({error:'SESSION TIMEDOUT'});
     }
 
-    const url = (req.param('url') || '').checkFormat(/[\w\d\/\.? \n()'";=:+-]+/);
+    const url = (req.param('url') || '').checkFormat(/[\w\d\/\.? \n()'";=:+&áéíóúñüÁÉÍÓÚÑÜ_-]+/);
     if (typeof url === 'undefined') {
-      sails.log.info("contar: no hay url, entra con",req.param('url'));
+      sails.log.debug("contar: no hay url, entra con",req.param('url'));
       return res.json({error:'URL EXPECTED'});
     }
-    let memkey = sails.config.prefix.favoritos+encodeURI(url);
-    let ok = await sails.memcached.Incr(memkey, 1);
-    if (!ok) {
-      ok = await sails.memcached.Set(memkey, 1, sails.config.memcachedTTL);
-    }
+    await FAVORITOS.contar(url);
 
-    const aux = await sails.memcached.Get(memkey);
     return res.json();
   },
 
@@ -244,7 +241,7 @@ function cmp (a, b) {
 
 function setCookie(res,cookie,val) {
   if (val) {
-    res.cookie(cookie, val, { maxAge: sails.config.sessionTimeout*1000, httpOnly: true });
+    res.cookie(cookie, val, { maxAge: sails.config.timeout.sesion*1000, httpOnly: true });
   } else {
     res.cookie(cookie, '', { maxAge: 0, httpOnly: true });
   }
@@ -342,46 +339,4 @@ async function obtengoMenues(grupos,dependId,lugarId) {
       return result;
     }, {General:[], Alumnos:[], Personal:[], Liceo:[]});
   return salida;
-}
-
-async function favoritos(sessionId, menues) {
-  let urls = [];
-  let favoritos = [];
-  for (m in menues) {
-    if (menues[m].length > 0) {
-      menues[m].forEach(function(o){
-        if (o.MenuObjPath) {
-          const url = o.MenuObjPath+(o.MenuObjId ? o.MenuObjId : '');
-          urls.push(sails.config.prefix.favoritos+encodeURI(url));
-          favoritos.push({url:url,title:o.MenuSubTitulo,iframe:o.MenuIFRAME,cant:0});
-        }
-      });
-    }
-  }
-
-  try {
-    const result = await sails.memcached.GetMulti(urls);
-    for (const url in result) {
-      for (let i=0; i<favoritos.length; i++) {
-        if (encodeURI(sails.config.prefix.favoritos+favoritos[i].url) === url) {
-          favoritos[i].cant = result[url];
-          break;
-        }
-      }
-    }
-    // elimino los que no tuvieron uso
-    for (let i=0; i<favoritos.length; i++) {
-      if (favoritos[i].cant == 0) {
-        favoritos.splice(i, 1);
-        i--;
-      }
-    }
-    // ordeno los que quedaron
-    favoritos = favoritos.sort((a,b) => a.cant < b.cant);
-    // dejo solo los 10 primeros
-    favoritos.splice(10);
-    return favoritos;
-  } catch (e) {
-    return undefined;
-  }
 }

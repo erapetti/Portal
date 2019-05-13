@@ -34,7 +34,7 @@ module.exports = {
       delete from SEGSESIONES
       where SesionesUserId = $1
         and $2 <= timestampdiff( second, concat('20',substr(SesionesTime,7,2),'-',substr(SesionesTime,4,2),'-',substr(SesionesTime,1,2),' ',substr(SesionesTime,10,8)), now())
-    `, [userId, sails.config.sessionTimeout]);
+    `, [userId, sails.config.timeout.sesion]);
   },
 
 /*                      ____                _
@@ -75,7 +75,7 @@ module.exports = {
       PerNombreCompleto:nombre,
     };
     // salvo la sesión en la cache:
-    await sails.memcached.Set("Portal:"+sessionId, sesion, sails.config.memcachedTTL);
+    await sails.memcached.Set(sails.config.prefix.sesion+sessionId, sesion, sails.config.memcachedTTL);
     // salvo la sesión en la base de datos:
     delete sesion.email; // Esto no se guarda en SEGSESIONES
     delete sesion.PerNombreCompleto; // Esto no se guarda en SEGSESIONES
@@ -92,7 +92,7 @@ module.exports = {
 */
   endSession: async function (id) {
     // cache delete
-    await sails.memcached.Delete("Portal:"+id);
+    await sails.memcached.Delete(sails.config.prefix.sesion+id);
     // db delete
     await this.destroy(id);
   },
@@ -110,7 +110,7 @@ module.exports = {
     async function invalidoVencidas(sesion) {
       try {
         st = fechahora_fromGXString(sesion.SesionesTime);
-        if (st.getTime() + sails.config.sessionTimeout*1000 < (new Date).getTime()) {
+        if (st.getTime() + sails.config.timeout.sesion*1000 < (new Date).getTime()) {
           throw 'sesionVencida';
         }
       } catch(e) {
@@ -124,7 +124,7 @@ module.exports = {
 
     let sesion;
     try {
-      sesion = await sails.memcached.Get("Portal:"+id);
+      sesion = await sails.memcached.Get(sails.config.prefix.sesion+id);
       if (!sesion) {
         throw 'NotSession';
       }
@@ -142,7 +142,7 @@ module.exports = {
         sails.log("tomo la sesion de la DB",sesion);
         // intento salvar la sesión en la cache, si falla no importa:
         try {
-          await sails.memcached.Set("Portal:"+id, sesion, sails.config.memcachedTTL);
+          await sails.memcached.Set(sails.config.prefix.sesion+id, sesion, sails.config.memcachedTTL);
         } catch (ignore) { }
       } catch (e) {
         // error al obtener la sesión de la base de datos
@@ -168,11 +168,11 @@ module.exports = {
     await this.update(id, valores);
     let sesion;
     try {
-      sesion = await sails.memcached.Get("Portal:"+id);
+      sesion = await sails.memcached.Get(sails.config.prefix.sesion+id);
       sesion.SesionesTime=(new Date).fechahora_toGXString();
       sesion.SesionesDependId=dependId;
       sesion.SesionesLugarId=lugarId;
-      await sails.memcached.Set("Portal:"+id, sesion, sails.config.memcachedTTL);
+      await sails.memcached.Set(sails.config.prefix.sesion+id, sesion, sails.config.memcachedTTL);
     } catch (e) {
       // no pude obtener la sesión de la cache, la reconstruyo
       sesion=this.getSession(id);

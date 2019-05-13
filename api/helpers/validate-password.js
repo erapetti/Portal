@@ -38,9 +38,9 @@ module.exports = {
           }
         };
 
-        let memkey = "Portal.ipInfo."+inputs.ip;
+        let memkey = sails.config.prefix.ipInfo+inputs.ip;
         let ipInfo = await sails.memcached.Get(memkey);
-        if (typeof ipInfo !== 'undefined' && ipInfo.UserIntLog>2 && ((new Date).getTime()/1000 - ipInfo.UserDate) < sails.config.ipTimeout ) {
+        if (typeof ipInfo !== 'undefined' && ipInfo.UserIntLog>2 && ((new Date).getTime()/1000 - ipInfo.UserDate) < sails.config.timeout.ipInfo ) {
           return exits.error(new Error("Hay demasiadas equivocaciones desde su dirección. Debe esperar un minuto antes de reintentar el ingreso"));
         }
 
@@ -48,7 +48,7 @@ module.exports = {
         if (!(usuario.UserEstado==2 && usuario.UserHab==1)) {
           return exits.error(new Error("Su usuario no está habilitado. Comuníquese con Mesa de Ayuda"));
         }
-        if (usuario.UserIntLog>2 && ((new Date).getTime()/1000 - usuario.UserDate) < sails.config.ipTimeout) {
+        if (usuario.UserIntLog>2 && ((new Date).getTime()/1000 - usuario.UserDate) < sails.config.timeout.ipInfo) {
           return exits.error(new Error("Se ha equivocado demasiadas veces. Debe esperar un minuto antes de reintentar el ingreso"));
         }
         try {

@@ -164,7 +164,11 @@ function refreshEmail() {
 }
 
 function resizeFavoritos() {
-  console.log("entra resize favoritos");
+  console.log("entra resize favoritos",$('#favoritos').length);
+  if (!$('#favoritos a').length) {
+    ocultarFavoritos();
+    return;
+  }
   // cantidad de caracteres que pueden entrar en el ancho
   let len = ($('#favoritos').width() / 8) * 0.95;
   console.log("len:",len);

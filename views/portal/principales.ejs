@@ -78,7 +78,7 @@
 
 <nav class="navbar navbar-expand-lg navbar-dark navbar-ces d-none d-lg-flex" id="navfavoritos">
   <ul class="navbar-nav" id="favoritos">
-  <% if (typeof favoritos !== 'undefined') { %>
+  <% if (typeof favoritos != 'undefined') { %>
     <% favoritos.forEach(function(f){ -%>
     <a href="<%- f.url %>"<% if (f.iframe) { %> target="content"<% } %> class="btn d-none" ><i class="fas fa-angle-right"></i><%- f.title %></a>
     <% }) %>
