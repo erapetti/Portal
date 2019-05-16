@@ -35,7 +35,7 @@ body#principales nav ul.dropdown-menu {background-color:#093F5B}
 body#principales nav .input-group {display:block;font-size:0.875rem}
 body#principales nav form div.form-group {margin:0;color:#504646;width0:15rem;max-width0:15rem;white-space:nowrap}
 body#principales nav input.form-control {font-size:0.875rem}
-body#principales nav input#search {background-color:#d2d2d2;border-color:#032a59;color:#000;padding-right:1.5rem;text-align:left}
+body#principales nav input#search {background-color:#d2d2d2;border-color:#032a59;color:#000;padding-right:1.5rem;text-align:left;min-width:15rem;max-width:15rem}
 body#principales nav div.tt-dataset {background-color:#003c5b;border-color:#032a59;color:#d2d2d2;padding:4px;cursor:pointer;white-space:nowrap}
 body#principales nav div.input-group span.fas {left:-1.5rem;position:relative}
 body#principales nav ul#right-side a.dropdown-toggle::after {display:none}

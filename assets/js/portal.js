@@ -54,7 +54,7 @@ $(function(){
 	});
 
 	// ajuste del título de la página
-	$('body#principales a:not([data-toggle])').click(function(){
+	$('body#principales ul#left-side a:not([data-toggle])').click(function(){
 		const href=$(this).attr('href');
     console.log("click",href);
 		if (href === "") {

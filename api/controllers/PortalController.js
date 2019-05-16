@@ -27,12 +27,6 @@ module.exports = {
   login: async function(req,res) {
     const base64 = require('base-64');
 
-    const loadavgvalue = await loadavg();
-    if (loadavgvalue > 50) {
-      // El sistema tiene demasiada carga, devuelvo una página en blanco
-      return res.serverError(new Error("El sistema está sobrecargado, por favor reintente el ingreso en unos minutos"));
-    }
-
     const userId = (req.param('userid') || '').replace(/ /g,'').toLowerCase().checkFormat(/[a-z]{1,4}\d+/);
     const password = (req.param('password') || '').checkFormat(/[a-zA-Z0-9áéíóúñäëïöüÁÉÍÓÚÑÄËÏÖÜçÇ,;.:ºª!|"@·#$~%&¬/()=?¿¡+*{}\t _-]+/);
     const secret = (req.param('secret') || '').toLowerCase().checkFormat(/[a-f\d]+\.[a-f\d]+/);
@@ -150,7 +144,7 @@ module.exports = {
       viewdata.menues = await obtengoMenues(grupos, req.sesion.SesionesDependId, req.sesion.SesionesLugarId);
 
       // Obtengo la lista de favoritos asociada a los menues del usuario
-      viewdata.favoritos = await FAVORITOS.listaFavoritos(viewdata.menues);
+      viewdata.favoritos = await FAVORITOS.listaFavoritos(req.sesion.SesionesUserId, viewdata.menues);
 
     } catch(e) {
       viewdata.mensaje = (typeof e.message === 'string' ? e.message : 'Error al generar la página. Reintente luego');
@@ -181,10 +175,39 @@ module.exports = {
                \___\___/|_|  |_|  \___|\___/
 */
   correo: async function(req,res) {
-    if (!req.sesion) {
-      return res.json({error:'SESSION TIMEDOUT'});
+    if (!sails.config.paths.cantCorreos || !req.sesion.email) {
+      return res.json({error:"No está configurada la dirección de correo del usuario"});
     }
-    return res.json({cant:'10+'});
+    let memkey = sails.config.prefix.cantCorreos+req.sesion.SesionesUserId;
+    let resp = { error: "No se pudo obtener la cantidad de correos pendientes" };
+    try {
+      resp = await sails.memcached.Get(memkey);
+      if (typeof resp === 'undefined') {
+        throw 'CACHE MISS';
+      }
+      sails.log.debug("cant correos tomado de cache ",resp);
+    } catch(err) {
+      // no está en cache
+      try {
+        resp = await getURL(sails.config.paths.cantCorreos);
+        if (typeof resp !== 'undefined' && resp.cant.checkFormat(/\d+\+?/)) {
+          sails.log("correo set ",resp);
+          try {
+            // lo guardo en cache hasta 5 segundos antes del próximo pedido
+            await sails.memcached.Set(memkey, resp, sails.config.intervaloCorreo-5);
+          } catch (ignore) { }
+        }
+
+      } catch(e) {
+        resp = e.message ? {error:e.message} : e;
+      }
+    }
+    return res.json(resp);
+  },
+
+  // solo para testing
+  cantCorreos: async function(req,res) {
+    return res.json({cant:"10+"});
   },
 
 /*                             _
@@ -206,6 +229,17 @@ module.exports = {
     await FAVORITOS.contar(url);
 
     return res.json();
+  },
+
+/*               __                 _       
+                / _| ___  _ __   __| | ___
+               | |_ / _ \| '_ \ / _` |/ _ \
+               |  _| (_) | | | | (_| | (_) |
+               |_|  \___/|_| |_|\__,_|\___/
+
+*/
+  fondo: async function(req,res) {
+    return res.view(viewdata);
   },
 
 };
@@ -258,17 +292,6 @@ async function modificationTime(filename) {
   const stat = util.promisify(fs.stat);
   const s = await stat(filename);
   return (typeof s !== 'undefined' ? s.mtimeMs : undefined);
-}
-
-async function loadavg() {
-  const fs = require('fs');
-  const readFile = util.promisify(fs.readFile);
-  try {
-    const loadavgvalue = await readFile('/proc/loadavg');
-    return parseInt(loadavgvalue.toString().split(' ')[0]);
-  } catch (e) {
-    return -1;
-  }
 }
 
 function mkDependLugarDesc(dependDesc,lugarDesc) {
@@ -325,8 +348,7 @@ async function obtengoMenues(grupos,dependId,lugarId) {
   // prefijos de MenuId asociados con menúes específicos
   const mapeoMenues = {MA_:"Alumnos", MP_:"Personal", ML_:"Liceo"};
   // construyo los menúes recorriendo listaMenues
-  const salida =
-    listaMenues.reduce(function(result, menuId) {
+  return listaMenues.reduce(function(result, menuId) {
       const listaOpcionesDelMenu =
         listaOpciones.filter(o => o.MenuId == menuId)
           .sort((a,b) => cmp(
@@ -337,6 +359,30 @@ async function obtengoMenues(grupos,dependId,lugarId) {
        Array.prototype.push.apply(result[mapeoMenues[menuId.substr(0,3)] || 'General'], listaOpcionesDelMenu);
       // devuelvo el objeto con todos los menúes que fui encontrando y sus opciones
       return result;
-    }, {General:[], Alumnos:[], Personal:[], Liceo:[]});
-  return salida;
+    },
+    {General:[], Alumnos:[], Personal:[], Liceo:[]}
+  );
+}
+
+async function getURL(url) {
+  const http = require('http');
+  let promise = new Promise((resolve,reject) => {
+    http.get(url, function(res) {
+      let body = '';
+      res.on('data', (data) => {
+        body += data;
+      });
+      res.on('end', () => {
+        try {
+          return resolve(JSON.parse(body));
+        } catch (e) {
+          return reject(e);
+        }
+      });
+      res.on('error', (err) => {
+        return reject(err.message);
+      })
+    });
+  });
+  return promise;
 }

@@ -43,7 +43,7 @@
 
     <% if (hay_email) { _%>
       <li class="nav-item dropdown px-3" id="li-email">
-        <a class="nav-link" href="<%- sails.config.paths.correo %>" target="_blank" id="email" data-toggle="tooltip" title="Abrir correo electrónico"><span class="fas fa-envelope"></span> <span class="badge badge-light" id="emails"></span></a>
+        <a class="nav-link" href="<%= sails.config.paths.correo %>" target="_blank" id="email" data-toggle="tooltip" title="Abrir correo electrónico"><span class="fas fa-envelope"></span> <span class="badge badge-light" id="emails"></span></a>
       </li>
     <% } _%>
 
@@ -108,8 +108,8 @@
     <% } %>
 
     <% if (hay_email) { -%>
-    	setInterval(refreshEmail,120000);
-      $('a#email').click(function(){ setTimeout(refreshEmail,15000) });
+    	setInterval(refreshEmail,(<%- sails.config.intervaloCorreo %>)*1000);
+      $('a#email').click(function(){ setTimeout(refreshEmail,15*1000) });
     	refreshEmail();
     <% } %>
 

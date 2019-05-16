@@ -16,9 +16,17 @@ module.exports = async function(req, res, next) {
       req.sesion = await SEGSESIONES.getSession(sessionId);
     } catch (ignore) { }
   }
-  if (!req.sesion && !(req.options && (req.options.action=="portal/login" || req.options.action=="portal/correo"))) {
-    sails.log.debug("redirect to / porque no hay sesion y req.url=",req.url);
-    return res.redirect(sails.config.custom.baseUrl);
+  const sinSesion = {
+    "portal/login":1, // si no tiene sesion muestra el form de login
+    "portal/cantcorreos":1, // lo uso solo para testing
+  };
+  if (!req.sesion && !(req.options && sinSesion[req.options.action]==1)) {
+    sails.log.debug("redirect to / porque no hay sesion y req.url=",req.url," action=",req.options.action);
+    if (req.wantsJSON) {
+      return res.json({error:'SESSION TIMEDOUT'});
+    } else {
+      return res.redirect(sails.config.custom.baseUrl);
+    }
   }
   return next();
 };

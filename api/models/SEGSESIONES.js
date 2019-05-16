@@ -128,7 +128,7 @@ module.exports = {
       if (!sesion) {
         throw 'NotSession';
       }
-      sails.log("tomo la sesion de la cache",sesion);
+      sails.log("tomo la sesion de la cache");
     } catch (e) {
       try {
         // reconstruyo la sesión desde la base de datos
@@ -139,7 +139,7 @@ module.exports = {
         // el email y el nombre tengo que traerlos aparte:
         sesion.email = await SSO.email(sesion.SesionesUserId);
         sesion.PerNombreCompleto = await PERSONASDOCUMENTOS.PerNombreCompleto(userId2documento(sesion.SesionesUserId));
-        sails.log("tomo la sesion de la DB",sesion);
+        sails.log("tomo la sesion de la DB");
         // intento salvar la sesión en la cache, si falla no importa:
         try {
           await sails.memcached.Set(sails.config.prefix.sesion+id, sesion, sails.config.memcachedTTL);

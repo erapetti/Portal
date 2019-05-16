@@ -44,6 +44,16 @@ module.exports.routes = {
     action: 'contar',
   },
 
+  '/cantCorreos': {
+    controller: 'portal',
+    action: 'cantCorreos',
+  },
+
+  '/fondo': {
+    controller: 'portal',
+    action: 'fondo',
+  },
+
   /***************************************************************************
   *                                                                          *
   * More custom routes here...                                               *
