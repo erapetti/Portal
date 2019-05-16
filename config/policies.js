@@ -19,6 +19,6 @@ module.exports.policies = {
 
   // '*': true,
   PortalController: {
-    '*': ['sessionAuth'],
+    '*': ['loadavg','sessionAuth'],
   },
 };
