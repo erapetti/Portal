@@ -9,11 +9,12 @@ module.exports = {
   datastore: 'Portal',
   migrate: 'safe',
   tableName: 'SEGRELACION_GRUPO_USUARIO',
-  primaryKey: 'GrupUsrStatus', // no es cierto pero permite que el modelo levante
+  //primaryKey: 'GrupUsrStatus', // no es cierto pero permite que el modelo levante
   attributes: {
-    GrupId: { type:'string' },
+    //GrupId: { type:'string' },
+    GrupId: { model: 'SEGGRUPOS' },
     UserId: { model:'SEGUSUARIOS' },
-    GrupUsrStatus: { type:'string', required:true },
+    id: { type:'string', columnName:'GrupUsrStatus', required:true },
     GrupUsrStatusFchIni: { type: 'ref', columnType: 'datetime' },
     GrupUsrStatusFchFin: { type: 'ref', columnType: 'datetime' },
     DependId: { model: 'DEPENDENCIAS' },
@@ -22,9 +23,9 @@ module.exports = {
 
   grupos: async function (userId) {
     const hoy = (new Date).fecha_toString();
-    const result = await this.find({
+    return (await this.find({
         UserId:userId,
-        GrupUsrStatus:'A',
+        // GrupUsrStatus:'A',
         GrupUsrStatusFchIni:{'<=':hoy},
         or: [
           {GrupUsrStatusFchFin:'1000-01-01'},
@@ -32,9 +33,10 @@ module.exports = {
         ],
       })
       .populate('DependId')
-      .populate('LugarId');
-
-    return result.filter( r => (!r.DependId || r.DependId.StatusId==1) && (!r.LugarId || r.LugarId.StatusId==1));
+      .populate('LugarId'))
+      .filter( g => (!g.DependId || g.DependId.StatusId==1) &&  (!g.LugarId || g.LugarId.StatusId==1) )
+      .concat([{GrupId:'G_TODOS', UserId:userId, GrupUsrStatus:'A', GrupUsrStatusFchIni:new Date(1000,0,1), GrupUsrStatusFchFin:new Date(1000,0,1), DependId:null, LugarId:null}])
+      ;
   },
 };
 

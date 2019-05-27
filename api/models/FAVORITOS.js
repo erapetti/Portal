@@ -33,7 +33,7 @@ sails.log.debug("contar",memkey);
     let memkey = sails.config.prefix.favoritosUsuario+userid;
     try {
       let favoritos = await sails.memcached.Get(memkey);
-      if (!favoritos) {
+      if (typeof favoritos === 'undefined') {
         throw 'CACHE MISS';
       }
       sails.log.debug("tomo favoritos de la cache");

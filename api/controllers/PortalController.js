@@ -78,18 +78,26 @@ module.exports = {
     // genero un nuevo secret para cada pedido:
     const newsecret = await sails.helpers.newSecret(req.ip);
 
+    let viewdata = {
+      title:'Ingreso al Portal de Servicios',
+      id:'login',
+      mensaje:mensaje,
+      secret:newsecret,
+      r64:r64,
+      descripcion:'',
+      mtime:'',
+    };
+
     // leo la descripción de la imagen de fondo
-    let descripcion = '';
     try {
-      descripcion = await leoDescripcion('assets/images/descripcion.html');
+      viewdata.descripcion = await leoDescripcion('assets/images/fondo/descripcion.html');
     } catch (ignore) { }
 
-    let mtime = '';
     try {
-      mtime = await modificationTime('assets/images/background.jpg');
+      viewdata.mtime = await modificationTime('assets/images/fondo/background.png');
     } catch (ignore) { }
 
-    return res.view({title:'Ingreso al Portal de Servicios',id:'login',mensaje:mensaje,secret:newsecret,r64:r64,descripcion:descripcion,mtime:mtime});
+    return res.view(viewdata);
   },
 
 /*              _            _             _
@@ -231,7 +239,7 @@ module.exports = {
     return res.json();
   },
 
-/*               __                 _       
+/*               __                 _
                 / _| ___  _ __   __| | ___
                | |_ / _ \| '_ \ / _` |/ _ \
                |  _| (_) | | | | (_| | (_) |
@@ -239,6 +247,54 @@ module.exports = {
 
 */
   fondo: async function(req,res) {
+sails.log.debug("Entra fondo");
+    try {
+      const permisos = await sails.helpers.validateAccess(req.sesion.SesionesUserId, req.sesion.SesionesDependId, req.sesion.SesionesLugarId, '/fondo');
+      sails.log("permisos",permisos,"DSP",permisos.DSP);
+      if (!permisos.DSP) {
+        throw AccessDenied;
+      }
+    } catch (e) {
+      return res.serverError(new Error('No tiene permiso para acceder a esta página'));
+    }
+
+    let viewdata = {
+      id: 'fondo',
+      title: 'Selección de imagen de fondo',
+      mensaje:undefined,
+      mtime:'',
+      images: [],
+    };
+
+    try {
+      try {
+        viewdata.mtime = await modificationTime('assets/images/fondo/background.png');
+      } catch (ignore) { }
+      viewdata.images = await fondosDisponibles();
+      const img = (req.param('img') || '').checkFormat(/[\w.-]+/);
+
+      if (req.param('upload') && req.file('adjunto')) {
+        const descripcion = req.param('descripcion');
+        sails.log.debug("upload", descripcion);
+        await subirFondo(req.file('adjunto'), descripcion);
+        return res.redirect(sails.config.custom.baseUrl+"fondo");
+      }
+      if (req.param('borrar') && img) {
+        sails.log.debug("borrar",img);
+        await borrarFondo(img);
+        return res.redirect(sails.config.custom.baseUrl+"fondo");
+      }
+      if (req.param('activar') && img) {
+        sails.log.debug("activar",img);
+        await activarFondo(img);
+        return res.redirect(sails.config.custom.baseUrl+"fondo");
+      }
+
+    } catch(e) {
+      viewdata.mensaje = e.message;
+      return res.view(viewdata);
+    }
+
     return res.view(viewdata);
   },
 
@@ -287,6 +343,79 @@ async function leoDescripcion(filename) {
   return await readFile(filename, 'utf8');
 }
 
+function filename2description(filename) {
+  return (filename.lastIndexOf('.')>=0 ? filename.substr(0,filename.lastIndexOf('.')) : filename)+".html";
+}
+
+async function subirFondo(adjunto,descripcion) {
+  adjunto.uploadPromise = util.promisify(adjunto.upload);
+  const uploadedFiles = await adjunto.uploadPromise({maxBytes: 10000000});
+
+  if (!uploadedFiles || uploadedFiles.length === 0){
+    throw new Error('No file was uploaded');
+  }
+  await guardarFondo(uploadedFiles[0].fd, descripcion);
+}
+
+async function guardarFondo(filepath, description) {
+  const fs = require('fs');
+  const writeFile = util.promisify(fs.writeFile);
+  const rename = util.promisify(fs.rename);
+  const dirFondos = "./assets/images/fondo/";
+  const filename = filepath.lastIndexOf('/')>=0 ? filepath.substr(filepath.lastIndexOf('/')+1) : filepath;
+
+  if (description) {
+    await writeFile(dirFondos+filename2description(filename), description);
+  }
+  return await rename(filepath, dirFondos+filename);
+}
+
+async function borrarFondo(filename) {
+  const fs = require('fs');
+  const unlink = util.promisify(fs.unlink);
+  const dirFondos = "./assets/images/fondo/";
+  await unlink(dirFondos+filename);
+  try {
+    await unlink(dirFondos+filename2description(filename));
+  } catch(ignore) { }
+}
+
+async function activarFondo(filename) {
+    const fs = require('fs');
+    const copyFile = util.promisify(fs.copyFile);
+    const dirFondos = "./assets/images/fondo/";
+    sails.log(await modificationTime(dirFondos+'background.png'));
+    await copyFile(dirFondos+filename, dirFondos+'background.png');
+    //sails.log.info(fs.statSync(dirFondos+'background.png').mtimeMs);
+    //fs.copyFileSync(dirFondos+filename, dirFondos+'background.png');
+    //sails.log.info(fs.statSync(dirFondos+'background.png').mtimeMs);
+    sails.log(await modificationTime(dirFondos+'background.png'));
+    sails.log('activarFondo',dirFondos+filename, dirFondos+'background.png');
+    //const sleep = util.promisify(setTimeout);
+    //await sleep(5000);
+    //sails.log("sale sleep");
+}
+
+async function fondosDisponibles() {
+  Array.prototype.add = async function add(f) {
+    if (f.match(/\.(png|jpg)$/i) && f != 'background.png') {
+      let obj = {filename:f};
+      try {
+        obj.mtime = await modificationTime(dirFondos+f);
+      } catch (ignore) { }
+      listado.push(obj);
+    }
+  };
+
+  let listado= [];
+  const fs = require('fs');
+  const readdir = util.promisify(fs.readdir);
+  const dirFondos = "./assets/images/fondo/";
+  const files = await readdir(dirFondos);
+  await Promise.all( files.map((f) => listado.add(f)) );
+  return listado;
+}
+
 async function modificationTime(filename) {
   const fs = require('fs');
   const stat = util.promisify(fs.stat);
@@ -331,7 +460,7 @@ async function obtengoMenues(grupos,dependId,lugarId) {
     filter: (g => (!g.DependId || g.DependId.id==dependId) && (!g.LugarId || g.LugarId.id==lugarId)),
     map: g => g.GrupId
   });
-  listaGrupos.push('G_TODOS');
+  //listaGrupos.push('G_TODOS');
   const menues = await SEGRELACION_GRUPO_MENU.menues(listaGrupos);
   const listaMenues = unicos( menues, {
     filter: m => m.MenuId != 'X_ADMINISTRAR_PERFIL',

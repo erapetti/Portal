@@ -73,10 +73,15 @@ $(function(){
     // restauro la barra de favoritos
     mostrarFavoritos();
   })
-	// encabezado responsive
+	// encabezado responsive en #principales
 	$(window).resize();
-//	setTimeout(function(){ $(window).resize() }, 900); // a veces hay que esperar a que la página se dibuje para que funcione
-//	setTimeout(function(){ $(window).resize() }, 2900);// a veces hay que esperar a que la página se dibuje para que funcione
+
+  $("body#fondo img[data-target='#imgModal']").click(function(){
+  	$('#imgSelected').attr('src', 'images/fondo/'+$(this).attr('alt'));
+  	$('#imgTarget').val( $(this).attr('alt') );
+  	$('#imgName').text( $(this).attr('alt') );
+  });
+
 });
 
 

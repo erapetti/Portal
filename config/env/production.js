@@ -250,10 +250,10 @@ module.exports = {
     * > Be sure to use the right protocol!  ("http://" vs. "https://")         *
     *                                                                          *
     ***************************************************************************/
-    // onlyAllowOrigins: [
+    onlyAllowOrigins: [
     //   'https://example.com',
     //   'https://staging.example.com',
-    // ],
+    ],
 
 
     /***************************************************************************
@@ -371,9 +371,11 @@ module.exports = {
   *                                                                         *
   ***************************************************************************/
   custom: {
-    baseUrl: 'https://servicios.ces.edu.uy/',
+    //baseUrl: 'https://servicios.ces.edu.uy/',
+    //basePath: '/portal',
+    baseUrl: 'http://localhost:1337/',
+    basePath: '',
     internalEmailAddress: 'rt@ces.edu.uy',
-    basePath: '/portal',
 
     // mailgunDomain: 'mg.example.com',
     // mailgunSecret: 'key-prod_fake_bd32301385130a0bafe030c',

@@ -16,6 +16,7 @@ module.exports = async function(req, res, next) {
       req.sesion = await SEGSESIONES.getSession(sessionId);
     } catch (ignore) { }
   }
+  // páginas que aceptan accesos sin sesión:
   const sinSesion = {
     "portal/login":1, // si no tiene sesion muestra el form de login
     "portal/cantcorreos":1, // lo uso solo para testing
